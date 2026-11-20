@@ -19,13 +19,24 @@ export default async function DashboardLayout({
   const [user, userData] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { clientId: true },
+      select: {
+        clientId: true,
+        otpVerifiedAt: true,
+        accounts: {
+          where: { providerId: "google" },
+          select: { id: true },
+        },
+      },
     }),
     prisma.userData.findUnique({
       where: { userId: session.user.id },
       select: { clientId: true },
     }),
   ]);
+
+  if (user?.accounts.length && !user.otpVerifiedAt) {
+    redirect("/verify-email");
+  }
 
   if (!user?.clientId && !userData?.clientId) redirect("/onboarding");
 

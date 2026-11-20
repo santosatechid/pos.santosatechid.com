@@ -3,7 +3,9 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { admin, openAPI } from "better-auth/plugins";
+import { admin, emailOTP, openAPI } from "better-auth/plugins";
+
+import { sendOtpEmail } from "@/services/email/resend";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -36,6 +38,15 @@ export const auth = betterAuth({
   },
   plugins: [
     openAPI(),
+    emailOTP({
+      otpLength: 6,
+      expiresIn: 300,
+      storeOTP: "hashed",
+      allowedAttempts: 5,
+      sendVerificationOTP: async ({ email, otp }) => {
+        await sendOtpEmail({ email, otp });
+      },
+    }),
     admin({
       // Optional: configure admin settings
       defaultRole: "user",

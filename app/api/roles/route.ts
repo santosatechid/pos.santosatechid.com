@@ -1,6 +1,10 @@
 import { handlePrismaError } from "@/services/errorHandler";
 import { prisma } from "@/services/prisma";
-import { resolveClient, clientForbidden } from "@/services/clients";
+import {
+  resolveClient,
+  clientForbidden,
+  ensureClientRoles,
+} from "@/services/clients";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -11,6 +15,8 @@ export async function GET(request: NextRequest) {
   if (!t.ok) return t.response;
 
   try {
+    await ensureClientRoles(t.clientId);
+
     // ✅ Optimized: Use select to drop unused createdAt/updatedAt
     // Fields used: id, name, description, isActive, permissions, _count.userData
     // Role bawaan/sistem (clientId NULL) tetap ditampilkan.

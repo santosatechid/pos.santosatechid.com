@@ -46,7 +46,7 @@ export default function OnboardingForm({
 
     try {
       await createClient.mutateAsync(form);
-      toast.success("Client berhasil dibuat.");
+      toast.success("Akun berhasil dibuat.");
       router.replace("/dashboard");
       router.refresh();
     } catch (error) {
@@ -57,7 +57,7 @@ export default function OnboardingForm({
   return (
     <Card className="w-full max-w-lg">
       <CardHeader>
-        <CardTitle>Buat client</CardTitle>
+        <CardTitle>Buat akun</CardTitle>
         <CardDescription>
           Satu akun memiliki satu client. Data role, branch, dan user akan
           berada di bawah client ini.
@@ -72,16 +72,6 @@ export default function OnboardingForm({
               value={form.name}
               onChange={(event) => update({ name: event.target.value })}
               placeholder="PT Contoh Indonesia"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="client-email">Email</Label>
-            <Input
-              id="client-email"
-              type="email"
-              value={form.email}
-              onChange={(event) => update({ email: event.target.value })}
             />
           </div>
 
@@ -110,7 +100,7 @@ export default function OnboardingForm({
             className="w-full"
             disabled={createClient.isPending}
           >
-            {createClient.isPending ? "Membuat client..." : "Buat client"}
+            {createClient.isPending ? "Membuat akun..." : "Buat akun"}
           </Button>
         </form>
       </CardContent>

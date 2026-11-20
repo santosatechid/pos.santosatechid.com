@@ -14,13 +14,24 @@ export default async function OnboardingPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { clientId: true },
+    select: {
+      clientId: true,
+      otpVerifiedAt: true,
+      accounts: {
+        where: { providerId: "google" },
+        select: { id: true },
+      },
+    },
   });
+
+  if (user?.accounts.length && !user.otpVerifiedAt) {
+    redirect("/verify-email");
+  }
 
   if (user?.clientId) redirect("/dashboard");
 
   return (
-    <main className="bg-background flex min-h-screen items-center justify-center px-4 py-10">
+    <main className="landing-theme bg-background flex min-h-screen items-center justify-center px-4 py-10">
       <OnboardingForm
         defaultName={session.user.name}
         defaultEmail={session.user.email}

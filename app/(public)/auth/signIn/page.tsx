@@ -75,7 +75,7 @@ export default function SignIn() {
       await signIn.social(
         {
           provider: "google",
-          callbackURL: "/dashboard",
+          callbackURL: "/verify-email",
         },
         {
           onRequest: () => setLoading(true),

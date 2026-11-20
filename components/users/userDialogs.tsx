@@ -4,17 +4,12 @@ import { useEffect, useState } from "react";
 
 import { useGetBranchs } from "@/hooks/branches/useBranches";
 import { useGetRoles } from "@/hooks/roles/useRoles";
-import { useGetBetterAuthWithoutUserData } from "@/hooks/users/useBetterAuthWithoutUserData";
 import {
   useCreateUser,
   useDeleteUser,
   useUpdateUser,
 } from "@/hooks/users/useUsers";
-import {
-  getErrorMessage,
-  type betterauthUser,
-  type UserDataTypes,
-} from "@/types";
+import { getErrorMessage, type UserDataTypes } from "@/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,13 +38,13 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-export type BetterAuthUser = betterauthUser;
 export type UserData = UserDataTypes;
 
 type FormState = {
-  userId: string;
   name: string;
   email: string;
+  password: string;
+  confirmPassword: string;
   roleId: string;
   branchId: string;
   status: string;
@@ -57,9 +52,10 @@ type FormState = {
 };
 
 const EMPTY_FORM: FormState = {
-  userId: "",
   name: "",
   email: "",
+  password: "",
+  confirmPassword: "",
   roleId: "",
   branchId: "",
   status: "active",
@@ -80,7 +76,6 @@ export function UserFormDialog({
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const { data: roles = [] } = useGetRoles();
   const { data: branches = [] } = useGetBranchs();
-  const { data: availableUsers = [] } = useGetBetterAuthWithoutUserData();
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const isSaving = createUser.isPending || updateUser.isPending;
@@ -91,9 +86,10 @@ export function UserFormDialog({
     setForm(
       editData
         ? {
-            userId: editData.userId || "",
             name: editData.name || "",
             email: editData.email || "",
+            password: "",
+            confirmPassword: "",
             roleId: editData.roleId || "",
             branchId: editData.branchId || "",
             status: editData.status || "active",
@@ -103,37 +99,57 @@ export function UserFormDialog({
     );
   }, [open, editData]);
 
+  useEffect(() => {
+    if (!open || editData || form.roleId) return;
+    const kasir = roles.find((role) => role.name.toLowerCase() === "kasir");
+    if (kasir) {
+      setForm((current) => ({ ...current, roleId: kasir.id }));
+    }
+  }, [open, editData, roles, form.roleId]);
+
   const update = (patch: Partial<FormState>) =>
     setForm((current) => ({ ...current, ...patch }));
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!form.name.trim() || !form.roleId) {
-      toast.error("Nama dan role wajib diisi.");
+    if (!form.name.trim() || !form.email.trim() || !form.roleId) {
+      toast.error("Nama, email, dan role wajib diisi.");
       return;
     }
-    if (!editData && !form.userId) {
-      toast.error("Pilih akun BetterAuth terlebih dahulu.");
-      return;
+
+    if (!editData || form.password) {
+      if (form.password.length < 8) {
+        toast.error("Password minimal 8 karakter.");
+        return;
+      }
+      if (form.password !== form.confirmPassword) {
+        toast.error("Konfirmasi password tidak sama.");
+        return;
+      }
     }
 
     const payload = {
       name: form.name.trim(),
-      email: form.email.trim() || null,
+      email: form.email.trim(),
       roleId: form.roleId,
       branchId: form.branchId || null,
       status: form.status,
       isActive: form.isActive,
+      ...(form.password ? { password: form.password } : {}),
     };
 
     try {
       if (editData) {
         await updateUser.mutateAsync({ id: editData.id, ...payload });
-        toast.success("User berhasil diperbarui.");
+        toast.success(
+          form.password
+            ? "User dan password berhasil diperbarui."
+            : "User berhasil diperbarui.",
+        );
       } else {
-        await createUser.mutateAsync({ userId: form.userId, ...payload });
-        toast.success("User berhasil dibuat.");
+        await createUser.mutateAsync(payload);
+        toast.success("User dibuat. Akun bisa langsung login.");
       }
       onOpenChange(false);
       onSuccess();
@@ -146,42 +162,12 @@ export function UserFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{editData ? "Edit User" : "Tambah User"}</DialogTitle>
+          <DialogTitle>
+            {editData ? "Edit User" : "Tambah User & Akun Login"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!editData && (
-            <div className="space-y-2">
-              <Label>Akun BetterAuth</Label>
-              <Select
-                value={form.userId || "none"}
-                onValueChange={(value) => {
-                  if (value === "none") return update({ userId: "" });
-                  const account = availableUsers.find(
-                    (user) => user.id === value,
-                  );
-                  update({
-                    userId: value,
-                    name: account?.name || form.name,
-                    email: account?.email || form.email,
-                  });
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih akun" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Pilih akun</SelectItem>
-                  {availableUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name} — {user.email}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
           <div className="space-y-2">
             <Label htmlFor="user-name">Nama</Label>
             <Input
@@ -193,15 +179,50 @@ export function UserFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="user-email">Email</Label>
+            <Label htmlFor="user-email">Email login</Label>
             <Input
               id="user-email"
               type="email"
+              autoComplete="off"
               value={form.email}
               onChange={(event) => update({ email: event.target.value })}
               placeholder="email@example.com"
             />
           </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="user-password">
+                {editData ? "Password baru (opsional)" : "Password"}
+              </Label>
+              <Input
+                id="user-password"
+                type="password"
+                autoComplete="new-password"
+                value={form.password}
+                onChange={(event) => update({ password: event.target.value })}
+                placeholder={editData ? "Kosongkan jika tetap" : "Min. 8 karakter"}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="user-password-confirm">Konfirmasi password</Label>
+              <Input
+                id="user-password-confirm"
+                type="password"
+                autoComplete="new-password"
+                value={form.confirmPassword}
+                onChange={(event) =>
+                  update({ confirmPassword: event.target.value })
+                }
+                placeholder="Ulangi password"
+              />
+            </div>
+          </div>
+
+          <p className="text-muted-foreground text-xs">
+            Akun login langsung terdaftar. Kasir bisa masuk memakai email dan
+            password ini tanpa halaman BetterAuth.
+          </p>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
@@ -310,7 +331,7 @@ export function DeleteUserDialog({
     if (!userData) return;
     try {
       await deleteUser.mutateAsync(userData.id);
-      toast.success("User berhasil dihapus.");
+      toast.success("User dan akun login berhasil dihapus.");
       onOpenChange(false);
       onSuccess();
     } catch (error) {
@@ -324,8 +345,8 @@ export function DeleteUserDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Hapus user?</AlertDialogTitle>
           <AlertDialogDescription>
-            Data user <strong>{userData?.name}</strong> akan dihapus permanen.
-            Akun BetterAuth tetap ada.
+            Akun login, profil, dan sesi <strong>{userData?.name}</strong> akan
+            dihapus permanen. User tidak bisa masuk lagi.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

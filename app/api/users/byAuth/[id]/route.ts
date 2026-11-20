@@ -1,6 +1,10 @@
 import { handlePrismaError } from "@/services/errorHandler";
 import { prisma } from "@/services/prisma";
-import { resolveClient, clientForbidden } from "@/services/clients";
+import {
+  resolveClient,
+  clientForbidden,
+  ensureClientRoles,
+} from "@/services/clients";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -15,6 +19,8 @@ export async function GET(
 
   const { id } = await params;
   try {
+    await ensureClientRoles(t.clientId);
+
     const user = await prisma.userData.findFirst({
       where: { userId: id as string, clientId: t.clientId },
       include: {

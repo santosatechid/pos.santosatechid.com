@@ -57,6 +57,13 @@ export default function UsersPage() {
     });
   }, [users, search, roleFilter]);
 
+  const showEmail = filtered.some((user) => Boolean(user.email));
+  const showRole = filtered.some((user) => Boolean(user.role?.name));
+  const showBranch = filtered.some((user) => Boolean(user.branchId));
+  const showLogin = filtered.some((user) => Boolean(user.user));
+  const columnCount =
+    3 + [showEmail, showRole, showBranch, showLogin].filter(Boolean).length;
+
   const openEdit = (user: UserDataTypes) => {
     setSelected(user);
     setEditOpen(true);
@@ -73,9 +80,12 @@ export default function UsersPage() {
     <div className="max-w-8xl space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-          <p className="text-muted-foreground text-sm">
-            Data profil yang terhubung ke akun BetterAuth.
+          <h1 className="text-[22px] font-extrabold tracking-[-0.6px] text-[#16181D]">
+            Users
+          </h1>
+          <p className="text-[13px] font-medium text-[#5D6370]">
+            Akun login email &amp; password, role, dan branch dibuat langsung
+            dari sini.
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
@@ -111,14 +121,15 @@ export default function UsersPage() {
         </Select>
       </div>
 
-      <div className="border-border overflow-hidden rounded-lg border">
+      <div className="overflow-x-auto rounded-xl border border-[#E3E5E9] bg-white">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Nama</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Branch</TableHead>
+              {showEmail ? <TableHead>Email</TableHead> : null}
+              {showRole ? <TableHead>Role</TableHead> : null}
+              {showBranch ? <TableHead>Branch</TableHead> : null}
+              {showLogin ? <TableHead>Login</TableHead> : null}
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
@@ -131,11 +142,24 @@ export default function UsersPage() {
               return (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {user.email || "—"}
-                  </TableCell>
-                  <TableCell>{user.role?.name || "—"}</TableCell>
-                  <TableCell>{branch?.name || "—"}</TableCell>
+                  {showEmail ? (
+                    <TableCell className="text-muted-foreground">
+                      {user.email || "—"}
+                    </TableCell>
+                  ) : null}
+                  {showRole ? (
+                    <TableCell>{user.role?.name || "—"}</TableCell>
+                  ) : null}
+                  {showBranch ? (
+                    <TableCell>{branch?.name || "—"}</TableCell>
+                  ) : null}
+                  {showLogin ? (
+                    <TableCell>
+                      <Badge variant={user.user ? "default" : "secondary"}>
+                        {user.user ? "Terhubung" : "Tanpa akun"}
+                      </Badge>
+                    </TableCell>
+                  ) : null}
                   <TableCell>
                     <Badge
                       variant={user.isActive ? "default" : "secondary"}
@@ -169,7 +193,7 @@ export default function UsersPage() {
             {filtered.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={columnCount}
                   className="text-muted-foreground py-8 text-center"
                 >
                   Tidak ada user yang cocok.

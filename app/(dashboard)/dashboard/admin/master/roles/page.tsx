@@ -100,7 +100,6 @@ type RoleFormValues = z.infer<typeof roleSchema>;
 const availablePermissions = [
   { id: "/", label: "Home" },
   { id: "/dashboard", label: "Dashboard" },
-  { id: "/dashboard/profile", label: "Profile" },
   { id: "/dashboard/admin/master/users", label: "Users Management" },
   { id: "/dashboard/admin/master/roles", label: "Roles Management" },
   { id: "/dashboard/admin/master/branches", label: "Branch Management" },
