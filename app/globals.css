@@ -499,3 +499,56 @@
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Landing track, scoped. DESIGN.md defines the landing page palette separately
+ * from the dashboard "Stripe track" tokens above. QRIS surfaces use this class
+ * so the same primitives (Button, Input, Dialog, Tabs) adopt the landing look
+ * without changing the rest of the dashboard.
+ */
+.landing-theme {
+  --background: #f7f7f8;
+  --foreground: #16181d;
+  --card: #ffffff;
+  --card-foreground: #16181d;
+  --popover: #ffffff;
+  --popover-foreground: #16181d;
+  --primary: #c81e28;
+  --primary-foreground: #ffffff;
+  --primary-hover: #a8161f;
+  --primary-active: #a8161f;
+  --secondary: #f2f3f5;
+  --secondary-foreground: #5d6370;
+  --muted: #f5f6f8;
+  --muted-foreground: #5d6370;
+  --accent: #fdecec;
+  --accent-foreground: #c81e28;
+  --border: #e3e5e9;
+  --input: #d9dbe0;
+  --ring: #c81e28;
+  --interactive: #c81e28;
+  --interactive-fill: #c81e28;
+  --interactive-border: #c81e28;
+  --interactive-surface: #fdecec;
+  --brand-tint: #fdecec;
+  --brand-accent: #c81e28;
+  --destructive: #c81e28;
+  --destructive-solid: #a8161f;
+  --destructive-surface: #fdecec;
+  --destructive-chip: #fdecec;
+  --destructive-border: #f2c3c4;
+  --success: #15803d;
+  --success-solid: #15803d;
+  --success-surface: #eaf7ee;
+  --success-chip: #eaf7ee;
+  --success-border: #bfe3cc;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 0.625rem;
+  --radius-3xl: 1.375rem;
+  --shadow-md: 0 14px 34px rgba(22, 24, 29, 0.12);
+  --shadow-lg: 0 26px 25px rgba(22, 24, 29, 0.2);
+}
+
