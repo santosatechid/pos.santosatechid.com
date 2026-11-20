@@ -227,6 +227,11 @@ export type ClientWhereInput = {
   roles?: Prisma.RoleListRelationFilter
   branches?: Prisma.BranchListRelationFilter
   announcements?: Prisma.AnnouncementListRelationFilter
+  qrisAccounts?: Prisma.QrisAccountListRelationFilter
+  qrisTransactions?: Prisma.QrisTransactionListRelationFilter
+  products?: Prisma.ProductListRelationFilter
+  diningTables?: Prisma.DiningTableListRelationFilter
+  orders?: Prisma.OrderListRelationFilter
 }
 
 export type ClientOrderByWithRelationInput = {
@@ -245,6 +250,11 @@ export type ClientOrderByWithRelationInput = {
   roles?: Prisma.RoleOrderByRelationAggregateInput
   branches?: Prisma.BranchOrderByRelationAggregateInput
   announcements?: Prisma.AnnouncementOrderByRelationAggregateInput
+  qrisAccounts?: Prisma.QrisAccountOrderByRelationAggregateInput
+  qrisTransactions?: Prisma.QrisTransactionOrderByRelationAggregateInput
+  products?: Prisma.ProductOrderByRelationAggregateInput
+  diningTables?: Prisma.DiningTableOrderByRelationAggregateInput
+  orders?: Prisma.OrderOrderByRelationAggregateInput
 }
 
 export type ClientWhereUniqueInput = Prisma.AtLeast<{
@@ -266,6 +276,11 @@ export type ClientWhereUniqueInput = Prisma.AtLeast<{
   roles?: Prisma.RoleListRelationFilter
   branches?: Prisma.BranchListRelationFilter
   announcements?: Prisma.AnnouncementListRelationFilter
+  qrisAccounts?: Prisma.QrisAccountListRelationFilter
+  qrisTransactions?: Prisma.QrisTransactionListRelationFilter
+  products?: Prisma.ProductListRelationFilter
+  diningTables?: Prisma.DiningTableListRelationFilter
+  orders?: Prisma.OrderListRelationFilter
 }, "id" | "slug">
 
 export type ClientOrderByWithAggregationInput = {
@@ -316,6 +331,11 @@ export type ClientCreateInput = {
   roles?: Prisma.RoleCreateNestedManyWithoutClientInput
   branches?: Prisma.BranchCreateNestedManyWithoutClientInput
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderCreateNestedManyWithoutClientInput
 }
 
 export type ClientUncheckedCreateInput = {
@@ -334,6 +354,11 @@ export type ClientUncheckedCreateInput = {
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutClientInput
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutClientInput
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableUncheckedCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutClientInput
 }
 
 export type ClientUpdateInput = {
@@ -352,6 +377,11 @@ export type ClientUpdateInput = {
   roles?: Prisma.RoleUpdateManyWithoutClientNestedInput
   branches?: Prisma.BranchUpdateManyWithoutClientNestedInput
   announcements?: Prisma.AnnouncementUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutClientNestedInput
 }
 
 export type ClientUncheckedUpdateInput = {
@@ -370,6 +400,11 @@ export type ClientUncheckedUpdateInput = {
   roles?: Prisma.RoleUncheckedUpdateManyWithoutClientNestedInput
   branches?: Prisma.BranchUncheckedUpdateManyWithoutClientNestedInput
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUncheckedUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutClientNestedInput
 }
 
 export type ClientCreateManyInput = {
@@ -538,6 +573,76 @@ export type ClientUpdateOneRequiredWithoutAnnouncementsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ClientUpdateToOneWithWhereWithoutAnnouncementsInput, Prisma.ClientUpdateWithoutAnnouncementsInput>, Prisma.ClientUncheckedUpdateWithoutAnnouncementsInput>
 }
 
+export type ClientCreateNestedOneWithoutQrisAccountsInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutQrisAccountsInput, Prisma.ClientUncheckedCreateWithoutQrisAccountsInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutQrisAccountsInput
+  connect?: Prisma.ClientWhereUniqueInput
+}
+
+export type ClientUpdateOneRequiredWithoutQrisAccountsNestedInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutQrisAccountsInput, Prisma.ClientUncheckedCreateWithoutQrisAccountsInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutQrisAccountsInput
+  upsert?: Prisma.ClientUpsertWithoutQrisAccountsInput
+  connect?: Prisma.ClientWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClientUpdateToOneWithWhereWithoutQrisAccountsInput, Prisma.ClientUpdateWithoutQrisAccountsInput>, Prisma.ClientUncheckedUpdateWithoutQrisAccountsInput>
+}
+
+export type ClientCreateNestedOneWithoutQrisTransactionsInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutQrisTransactionsInput, Prisma.ClientUncheckedCreateWithoutQrisTransactionsInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutQrisTransactionsInput
+  connect?: Prisma.ClientWhereUniqueInput
+}
+
+export type ClientUpdateOneRequiredWithoutQrisTransactionsNestedInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutQrisTransactionsInput, Prisma.ClientUncheckedCreateWithoutQrisTransactionsInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutQrisTransactionsInput
+  upsert?: Prisma.ClientUpsertWithoutQrisTransactionsInput
+  connect?: Prisma.ClientWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClientUpdateToOneWithWhereWithoutQrisTransactionsInput, Prisma.ClientUpdateWithoutQrisTransactionsInput>, Prisma.ClientUncheckedUpdateWithoutQrisTransactionsInput>
+}
+
+export type ClientCreateNestedOneWithoutProductsInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutProductsInput, Prisma.ClientUncheckedCreateWithoutProductsInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutProductsInput
+  connect?: Prisma.ClientWhereUniqueInput
+}
+
+export type ClientUpdateOneRequiredWithoutProductsNestedInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutProductsInput, Prisma.ClientUncheckedCreateWithoutProductsInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutProductsInput
+  upsert?: Prisma.ClientUpsertWithoutProductsInput
+  connect?: Prisma.ClientWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClientUpdateToOneWithWhereWithoutProductsInput, Prisma.ClientUpdateWithoutProductsInput>, Prisma.ClientUncheckedUpdateWithoutProductsInput>
+}
+
+export type ClientCreateNestedOneWithoutDiningTablesInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutDiningTablesInput, Prisma.ClientUncheckedCreateWithoutDiningTablesInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutDiningTablesInput
+  connect?: Prisma.ClientWhereUniqueInput
+}
+
+export type ClientUpdateOneRequiredWithoutDiningTablesNestedInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutDiningTablesInput, Prisma.ClientUncheckedCreateWithoutDiningTablesInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutDiningTablesInput
+  upsert?: Prisma.ClientUpsertWithoutDiningTablesInput
+  connect?: Prisma.ClientWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClientUpdateToOneWithWhereWithoutDiningTablesInput, Prisma.ClientUpdateWithoutDiningTablesInput>, Prisma.ClientUncheckedUpdateWithoutDiningTablesInput>
+}
+
+export type ClientCreateNestedOneWithoutOrdersInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutOrdersInput, Prisma.ClientUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutOrdersInput
+  connect?: Prisma.ClientWhereUniqueInput
+}
+
+export type ClientUpdateOneRequiredWithoutOrdersNestedInput = {
+  create?: Prisma.XOR<Prisma.ClientCreateWithoutOrdersInput, Prisma.ClientUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.ClientCreateOrConnectWithoutOrdersInput
+  upsert?: Prisma.ClientUpsertWithoutOrdersInput
+  connect?: Prisma.ClientWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClientUpdateToOneWithWhereWithoutOrdersInput, Prisma.ClientUpdateWithoutOrdersInput>, Prisma.ClientUncheckedUpdateWithoutOrdersInput>
+}
+
 export type ClientCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -553,6 +658,11 @@ export type ClientCreateWithoutUsersInput = {
   roles?: Prisma.RoleCreateNestedManyWithoutClientInput
   branches?: Prisma.BranchCreateNestedManyWithoutClientInput
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderCreateNestedManyWithoutClientInput
 }
 
 export type ClientUncheckedCreateWithoutUsersInput = {
@@ -570,6 +680,11 @@ export type ClientUncheckedCreateWithoutUsersInput = {
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutClientInput
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutClientInput
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableUncheckedCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutClientInput
 }
 
 export type ClientCreateOrConnectWithoutUsersInput = {
@@ -603,6 +718,11 @@ export type ClientUpdateWithoutUsersInput = {
   roles?: Prisma.RoleUpdateManyWithoutClientNestedInput
   branches?: Prisma.BranchUpdateManyWithoutClientNestedInput
   announcements?: Prisma.AnnouncementUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutClientNestedInput
 }
 
 export type ClientUncheckedUpdateWithoutUsersInput = {
@@ -620,6 +740,11 @@ export type ClientUncheckedUpdateWithoutUsersInput = {
   roles?: Prisma.RoleUncheckedUpdateManyWithoutClientNestedInput
   branches?: Prisma.BranchUncheckedUpdateManyWithoutClientNestedInput
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUncheckedUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutClientNestedInput
 }
 
 export type ClientCreateWithoutUserDataInput = {
@@ -637,6 +762,11 @@ export type ClientCreateWithoutUserDataInput = {
   roles?: Prisma.RoleCreateNestedManyWithoutClientInput
   branches?: Prisma.BranchCreateNestedManyWithoutClientInput
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderCreateNestedManyWithoutClientInput
 }
 
 export type ClientUncheckedCreateWithoutUserDataInput = {
@@ -654,6 +784,11 @@ export type ClientUncheckedCreateWithoutUserDataInput = {
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutClientInput
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutClientInput
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableUncheckedCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutClientInput
 }
 
 export type ClientCreateOrConnectWithoutUserDataInput = {
@@ -687,6 +822,11 @@ export type ClientUpdateWithoutUserDataInput = {
   roles?: Prisma.RoleUpdateManyWithoutClientNestedInput
   branches?: Prisma.BranchUpdateManyWithoutClientNestedInput
   announcements?: Prisma.AnnouncementUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutClientNestedInput
 }
 
 export type ClientUncheckedUpdateWithoutUserDataInput = {
@@ -704,6 +844,11 @@ export type ClientUncheckedUpdateWithoutUserDataInput = {
   roles?: Prisma.RoleUncheckedUpdateManyWithoutClientNestedInput
   branches?: Prisma.BranchUncheckedUpdateManyWithoutClientNestedInput
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUncheckedUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutClientNestedInput
 }
 
 export type ClientCreateWithoutRolesInput = {
@@ -721,6 +866,11 @@ export type ClientCreateWithoutRolesInput = {
   userData?: Prisma.UserDataCreateNestedManyWithoutClientInput
   branches?: Prisma.BranchCreateNestedManyWithoutClientInput
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderCreateNestedManyWithoutClientInput
 }
 
 export type ClientUncheckedCreateWithoutRolesInput = {
@@ -738,6 +888,11 @@ export type ClientUncheckedCreateWithoutRolesInput = {
   userData?: Prisma.UserDataUncheckedCreateNestedManyWithoutClientInput
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutClientInput
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableUncheckedCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutClientInput
 }
 
 export type ClientCreateOrConnectWithoutRolesInput = {
@@ -771,6 +926,11 @@ export type ClientUpdateWithoutRolesInput = {
   userData?: Prisma.UserDataUpdateManyWithoutClientNestedInput
   branches?: Prisma.BranchUpdateManyWithoutClientNestedInput
   announcements?: Prisma.AnnouncementUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutClientNestedInput
 }
 
 export type ClientUncheckedUpdateWithoutRolesInput = {
@@ -788,6 +948,11 @@ export type ClientUncheckedUpdateWithoutRolesInput = {
   userData?: Prisma.UserDataUncheckedUpdateManyWithoutClientNestedInput
   branches?: Prisma.BranchUncheckedUpdateManyWithoutClientNestedInput
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUncheckedUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutClientNestedInput
 }
 
 export type ClientCreateWithoutBranchesInput = {
@@ -805,6 +970,11 @@ export type ClientCreateWithoutBranchesInput = {
   userData?: Prisma.UserDataCreateNestedManyWithoutClientInput
   roles?: Prisma.RoleCreateNestedManyWithoutClientInput
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderCreateNestedManyWithoutClientInput
 }
 
 export type ClientUncheckedCreateWithoutBranchesInput = {
@@ -822,6 +992,11 @@ export type ClientUncheckedCreateWithoutBranchesInput = {
   userData?: Prisma.UserDataUncheckedCreateNestedManyWithoutClientInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutClientInput
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableUncheckedCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutClientInput
 }
 
 export type ClientCreateOrConnectWithoutBranchesInput = {
@@ -855,6 +1030,11 @@ export type ClientUpdateWithoutBranchesInput = {
   userData?: Prisma.UserDataUpdateManyWithoutClientNestedInput
   roles?: Prisma.RoleUpdateManyWithoutClientNestedInput
   announcements?: Prisma.AnnouncementUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutClientNestedInput
 }
 
 export type ClientUncheckedUpdateWithoutBranchesInput = {
@@ -872,6 +1052,11 @@ export type ClientUncheckedUpdateWithoutBranchesInput = {
   userData?: Prisma.UserDataUncheckedUpdateManyWithoutClientNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutClientNestedInput
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUncheckedUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutClientNestedInput
 }
 
 export type ClientCreateWithoutAnnouncementsInput = {
@@ -889,6 +1074,11 @@ export type ClientCreateWithoutAnnouncementsInput = {
   userData?: Prisma.UserDataCreateNestedManyWithoutClientInput
   roles?: Prisma.RoleCreateNestedManyWithoutClientInput
   branches?: Prisma.BranchCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderCreateNestedManyWithoutClientInput
 }
 
 export type ClientUncheckedCreateWithoutAnnouncementsInput = {
@@ -906,6 +1096,11 @@ export type ClientUncheckedCreateWithoutAnnouncementsInput = {
   userData?: Prisma.UserDataUncheckedCreateNestedManyWithoutClientInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutClientInput
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableUncheckedCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutClientInput
 }
 
 export type ClientCreateOrConnectWithoutAnnouncementsInput = {
@@ -939,6 +1134,11 @@ export type ClientUpdateWithoutAnnouncementsInput = {
   userData?: Prisma.UserDataUpdateManyWithoutClientNestedInput
   roles?: Prisma.RoleUpdateManyWithoutClientNestedInput
   branches?: Prisma.BranchUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutClientNestedInput
 }
 
 export type ClientUncheckedUpdateWithoutAnnouncementsInput = {
@@ -956,6 +1156,531 @@ export type ClientUncheckedUpdateWithoutAnnouncementsInput = {
   userData?: Prisma.UserDataUncheckedUpdateManyWithoutClientNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutClientNestedInput
   branches?: Prisma.BranchUncheckedUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUncheckedUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutClientNestedInput
+}
+
+export type ClientCreateWithoutQrisAccountsInput = {
+  id?: string
+  name: string
+  slug: string
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  logoUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutClientInput
+  userData?: Prisma.UserDataCreateNestedManyWithoutClientInput
+  roles?: Prisma.RoleCreateNestedManyWithoutClientInput
+  branches?: Prisma.BranchCreateNestedManyWithoutClientInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderCreateNestedManyWithoutClientInput
+}
+
+export type ClientUncheckedCreateWithoutQrisAccountsInput = {
+  id?: string
+  name: string
+  slug: string
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  logoUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutClientInput
+  userData?: Prisma.UserDataUncheckedCreateNestedManyWithoutClientInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutClientInput
+  branches?: Prisma.BranchUncheckedCreateNestedManyWithoutClientInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableUncheckedCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutClientInput
+}
+
+export type ClientCreateOrConnectWithoutQrisAccountsInput = {
+  where: Prisma.ClientWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClientCreateWithoutQrisAccountsInput, Prisma.ClientUncheckedCreateWithoutQrisAccountsInput>
+}
+
+export type ClientUpsertWithoutQrisAccountsInput = {
+  update: Prisma.XOR<Prisma.ClientUpdateWithoutQrisAccountsInput, Prisma.ClientUncheckedUpdateWithoutQrisAccountsInput>
+  create: Prisma.XOR<Prisma.ClientCreateWithoutQrisAccountsInput, Prisma.ClientUncheckedCreateWithoutQrisAccountsInput>
+  where?: Prisma.ClientWhereInput
+}
+
+export type ClientUpdateToOneWithWhereWithoutQrisAccountsInput = {
+  where?: Prisma.ClientWhereInput
+  data: Prisma.XOR<Prisma.ClientUpdateWithoutQrisAccountsInput, Prisma.ClientUncheckedUpdateWithoutQrisAccountsInput>
+}
+
+export type ClientUpdateWithoutQrisAccountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutClientNestedInput
+  userData?: Prisma.UserDataUpdateManyWithoutClientNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutClientNestedInput
+  branches?: Prisma.BranchUpdateManyWithoutClientNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutClientNestedInput
+}
+
+export type ClientUncheckedUpdateWithoutQrisAccountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutClientNestedInput
+  userData?: Prisma.UserDataUncheckedUpdateManyWithoutClientNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutClientNestedInput
+  branches?: Prisma.BranchUncheckedUpdateManyWithoutClientNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUncheckedUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutClientNestedInput
+}
+
+export type ClientCreateWithoutQrisTransactionsInput = {
+  id?: string
+  name: string
+  slug: string
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  logoUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutClientInput
+  userData?: Prisma.UserDataCreateNestedManyWithoutClientInput
+  roles?: Prisma.RoleCreateNestedManyWithoutClientInput
+  branches?: Prisma.BranchCreateNestedManyWithoutClientInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderCreateNestedManyWithoutClientInput
+}
+
+export type ClientUncheckedCreateWithoutQrisTransactionsInput = {
+  id?: string
+  name: string
+  slug: string
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  logoUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutClientInput
+  userData?: Prisma.UserDataUncheckedCreateNestedManyWithoutClientInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutClientInput
+  branches?: Prisma.BranchUncheckedCreateNestedManyWithoutClientInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableUncheckedCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutClientInput
+}
+
+export type ClientCreateOrConnectWithoutQrisTransactionsInput = {
+  where: Prisma.ClientWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClientCreateWithoutQrisTransactionsInput, Prisma.ClientUncheckedCreateWithoutQrisTransactionsInput>
+}
+
+export type ClientUpsertWithoutQrisTransactionsInput = {
+  update: Prisma.XOR<Prisma.ClientUpdateWithoutQrisTransactionsInput, Prisma.ClientUncheckedUpdateWithoutQrisTransactionsInput>
+  create: Prisma.XOR<Prisma.ClientCreateWithoutQrisTransactionsInput, Prisma.ClientUncheckedCreateWithoutQrisTransactionsInput>
+  where?: Prisma.ClientWhereInput
+}
+
+export type ClientUpdateToOneWithWhereWithoutQrisTransactionsInput = {
+  where?: Prisma.ClientWhereInput
+  data: Prisma.XOR<Prisma.ClientUpdateWithoutQrisTransactionsInput, Prisma.ClientUncheckedUpdateWithoutQrisTransactionsInput>
+}
+
+export type ClientUpdateWithoutQrisTransactionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutClientNestedInput
+  userData?: Prisma.UserDataUpdateManyWithoutClientNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutClientNestedInput
+  branches?: Prisma.BranchUpdateManyWithoutClientNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutClientNestedInput
+}
+
+export type ClientUncheckedUpdateWithoutQrisTransactionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutClientNestedInput
+  userData?: Prisma.UserDataUncheckedUpdateManyWithoutClientNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutClientNestedInput
+  branches?: Prisma.BranchUncheckedUpdateManyWithoutClientNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUncheckedUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutClientNestedInput
+}
+
+export type ClientCreateWithoutProductsInput = {
+  id?: string
+  name: string
+  slug: string
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  logoUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutClientInput
+  userData?: Prisma.UserDataCreateNestedManyWithoutClientInput
+  roles?: Prisma.RoleCreateNestedManyWithoutClientInput
+  branches?: Prisma.BranchCreateNestedManyWithoutClientInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderCreateNestedManyWithoutClientInput
+}
+
+export type ClientUncheckedCreateWithoutProductsInput = {
+  id?: string
+  name: string
+  slug: string
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  logoUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutClientInput
+  userData?: Prisma.UserDataUncheckedCreateNestedManyWithoutClientInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutClientInput
+  branches?: Prisma.BranchUncheckedCreateNestedManyWithoutClientInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableUncheckedCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutClientInput
+}
+
+export type ClientCreateOrConnectWithoutProductsInput = {
+  where: Prisma.ClientWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClientCreateWithoutProductsInput, Prisma.ClientUncheckedCreateWithoutProductsInput>
+}
+
+export type ClientUpsertWithoutProductsInput = {
+  update: Prisma.XOR<Prisma.ClientUpdateWithoutProductsInput, Prisma.ClientUncheckedUpdateWithoutProductsInput>
+  create: Prisma.XOR<Prisma.ClientCreateWithoutProductsInput, Prisma.ClientUncheckedCreateWithoutProductsInput>
+  where?: Prisma.ClientWhereInput
+}
+
+export type ClientUpdateToOneWithWhereWithoutProductsInput = {
+  where?: Prisma.ClientWhereInput
+  data: Prisma.XOR<Prisma.ClientUpdateWithoutProductsInput, Prisma.ClientUncheckedUpdateWithoutProductsInput>
+}
+
+export type ClientUpdateWithoutProductsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutClientNestedInput
+  userData?: Prisma.UserDataUpdateManyWithoutClientNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutClientNestedInput
+  branches?: Prisma.BranchUpdateManyWithoutClientNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutClientNestedInput
+}
+
+export type ClientUncheckedUpdateWithoutProductsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutClientNestedInput
+  userData?: Prisma.UserDataUncheckedUpdateManyWithoutClientNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutClientNestedInput
+  branches?: Prisma.BranchUncheckedUpdateManyWithoutClientNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUncheckedUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutClientNestedInput
+}
+
+export type ClientCreateWithoutDiningTablesInput = {
+  id?: string
+  name: string
+  slug: string
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  logoUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutClientInput
+  userData?: Prisma.UserDataCreateNestedManyWithoutClientInput
+  roles?: Prisma.RoleCreateNestedManyWithoutClientInput
+  branches?: Prisma.BranchCreateNestedManyWithoutClientInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderCreateNestedManyWithoutClientInput
+}
+
+export type ClientUncheckedCreateWithoutDiningTablesInput = {
+  id?: string
+  name: string
+  slug: string
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  logoUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutClientInput
+  userData?: Prisma.UserDataUncheckedCreateNestedManyWithoutClientInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutClientInput
+  branches?: Prisma.BranchUncheckedCreateNestedManyWithoutClientInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutClientInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutClientInput
+}
+
+export type ClientCreateOrConnectWithoutDiningTablesInput = {
+  where: Prisma.ClientWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClientCreateWithoutDiningTablesInput, Prisma.ClientUncheckedCreateWithoutDiningTablesInput>
+}
+
+export type ClientUpsertWithoutDiningTablesInput = {
+  update: Prisma.XOR<Prisma.ClientUpdateWithoutDiningTablesInput, Prisma.ClientUncheckedUpdateWithoutDiningTablesInput>
+  create: Prisma.XOR<Prisma.ClientCreateWithoutDiningTablesInput, Prisma.ClientUncheckedCreateWithoutDiningTablesInput>
+  where?: Prisma.ClientWhereInput
+}
+
+export type ClientUpdateToOneWithWhereWithoutDiningTablesInput = {
+  where?: Prisma.ClientWhereInput
+  data: Prisma.XOR<Prisma.ClientUpdateWithoutDiningTablesInput, Prisma.ClientUncheckedUpdateWithoutDiningTablesInput>
+}
+
+export type ClientUpdateWithoutDiningTablesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutClientNestedInput
+  userData?: Prisma.UserDataUpdateManyWithoutClientNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutClientNestedInput
+  branches?: Prisma.BranchUpdateManyWithoutClientNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutClientNestedInput
+}
+
+export type ClientUncheckedUpdateWithoutDiningTablesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutClientNestedInput
+  userData?: Prisma.UserDataUncheckedUpdateManyWithoutClientNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutClientNestedInput
+  branches?: Prisma.BranchUncheckedUpdateManyWithoutClientNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutClientNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutClientNestedInput
+}
+
+export type ClientCreateWithoutOrdersInput = {
+  id?: string
+  name: string
+  slug: string
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  logoUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutClientInput
+  userData?: Prisma.UserDataCreateNestedManyWithoutClientInput
+  roles?: Prisma.RoleCreateNestedManyWithoutClientInput
+  branches?: Prisma.BranchCreateNestedManyWithoutClientInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableCreateNestedManyWithoutClientInput
+}
+
+export type ClientUncheckedCreateWithoutOrdersInput = {
+  id?: string
+  name: string
+  slug: string
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  logoUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutClientInput
+  userData?: Prisma.UserDataUncheckedCreateNestedManyWithoutClientInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutClientInput
+  branches?: Prisma.BranchUncheckedCreateNestedManyWithoutClientInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutClientInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedCreateNestedManyWithoutClientInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedCreateNestedManyWithoutClientInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutClientInput
+  diningTables?: Prisma.DiningTableUncheckedCreateNestedManyWithoutClientInput
+}
+
+export type ClientCreateOrConnectWithoutOrdersInput = {
+  where: Prisma.ClientWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClientCreateWithoutOrdersInput, Prisma.ClientUncheckedCreateWithoutOrdersInput>
+}
+
+export type ClientUpsertWithoutOrdersInput = {
+  update: Prisma.XOR<Prisma.ClientUpdateWithoutOrdersInput, Prisma.ClientUncheckedUpdateWithoutOrdersInput>
+  create: Prisma.XOR<Prisma.ClientCreateWithoutOrdersInput, Prisma.ClientUncheckedCreateWithoutOrdersInput>
+  where?: Prisma.ClientWhereInput
+}
+
+export type ClientUpdateToOneWithWhereWithoutOrdersInput = {
+  where?: Prisma.ClientWhereInput
+  data: Prisma.XOR<Prisma.ClientUpdateWithoutOrdersInput, Prisma.ClientUncheckedUpdateWithoutOrdersInput>
+}
+
+export type ClientUpdateWithoutOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutClientNestedInput
+  userData?: Prisma.UserDataUpdateManyWithoutClientNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutClientNestedInput
+  branches?: Prisma.BranchUpdateManyWithoutClientNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUpdateManyWithoutClientNestedInput
+}
+
+export type ClientUncheckedUpdateWithoutOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutClientNestedInput
+  userData?: Prisma.UserDataUncheckedUpdateManyWithoutClientNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutClientNestedInput
+  branches?: Prisma.BranchUncheckedUpdateManyWithoutClientNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutClientNestedInput
+  qrisAccounts?: Prisma.QrisAccountUncheckedUpdateManyWithoutClientNestedInput
+  qrisTransactions?: Prisma.QrisTransactionUncheckedUpdateManyWithoutClientNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutClientNestedInput
+  diningTables?: Prisma.DiningTableUncheckedUpdateManyWithoutClientNestedInput
 }
 
 
@@ -969,6 +1694,11 @@ export type ClientCountOutputType = {
   roles: number
   branches: number
   announcements: number
+  qrisAccounts: number
+  qrisTransactions: number
+  products: number
+  diningTables: number
+  orders: number
 }
 
 export type ClientCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -977,6 +1707,11 @@ export type ClientCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   roles?: boolean | ClientCountOutputTypeCountRolesArgs
   branches?: boolean | ClientCountOutputTypeCountBranchesArgs
   announcements?: boolean | ClientCountOutputTypeCountAnnouncementsArgs
+  qrisAccounts?: boolean | ClientCountOutputTypeCountQrisAccountsArgs
+  qrisTransactions?: boolean | ClientCountOutputTypeCountQrisTransactionsArgs
+  products?: boolean | ClientCountOutputTypeCountProductsArgs
+  diningTables?: boolean | ClientCountOutputTypeCountDiningTablesArgs
+  orders?: boolean | ClientCountOutputTypeCountOrdersArgs
 }
 
 /**
@@ -1024,6 +1759,41 @@ export type ClientCountOutputTypeCountAnnouncementsArgs<ExtArgs extends runtime.
   where?: Prisma.AnnouncementWhereInput
 }
 
+/**
+ * ClientCountOutputType without action
+ */
+export type ClientCountOutputTypeCountQrisAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.QrisAccountWhereInput
+}
+
+/**
+ * ClientCountOutputType without action
+ */
+export type ClientCountOutputTypeCountQrisTransactionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.QrisTransactionWhereInput
+}
+
+/**
+ * ClientCountOutputType without action
+ */
+export type ClientCountOutputTypeCountProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductWhereInput
+}
+
+/**
+ * ClientCountOutputType without action
+ */
+export type ClientCountOutputTypeCountDiningTablesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DiningTableWhereInput
+}
+
+/**
+ * ClientCountOutputType without action
+ */
+export type ClientCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrderWhereInput
+}
+
 
 export type ClientSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1041,6 +1811,11 @@ export type ClientSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   roles?: boolean | Prisma.Client$rolesArgs<ExtArgs>
   branches?: boolean | Prisma.Client$branchesArgs<ExtArgs>
   announcements?: boolean | Prisma.Client$announcementsArgs<ExtArgs>
+  qrisAccounts?: boolean | Prisma.Client$qrisAccountsArgs<ExtArgs>
+  qrisTransactions?: boolean | Prisma.Client$qrisTransactionsArgs<ExtArgs>
+  products?: boolean | Prisma.Client$productsArgs<ExtArgs>
+  diningTables?: boolean | Prisma.Client$diningTablesArgs<ExtArgs>
+  orders?: boolean | Prisma.Client$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.ClientCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["client"]>
 
@@ -1090,6 +1865,11 @@ export type ClientInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   roles?: boolean | Prisma.Client$rolesArgs<ExtArgs>
   branches?: boolean | Prisma.Client$branchesArgs<ExtArgs>
   announcements?: boolean | Prisma.Client$announcementsArgs<ExtArgs>
+  qrisAccounts?: boolean | Prisma.Client$qrisAccountsArgs<ExtArgs>
+  qrisTransactions?: boolean | Prisma.Client$qrisTransactionsArgs<ExtArgs>
+  products?: boolean | Prisma.Client$productsArgs<ExtArgs>
+  diningTables?: boolean | Prisma.Client$diningTablesArgs<ExtArgs>
+  orders?: boolean | Prisma.Client$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.ClientCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ClientIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1103,6 +1883,11 @@ export type $ClientPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     roles: Prisma.$RolePayload<ExtArgs>[]
     branches: Prisma.$BranchPayload<ExtArgs>[]
     announcements: Prisma.$AnnouncementPayload<ExtArgs>[]
+    qrisAccounts: Prisma.$QrisAccountPayload<ExtArgs>[]
+    qrisTransactions: Prisma.$QrisTransactionPayload<ExtArgs>[]
+    products: Prisma.$ProductPayload<ExtArgs>[]
+    diningTables: Prisma.$DiningTablePayload<ExtArgs>[]
+    orders: Prisma.$OrderPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1514,6 +2299,11 @@ export interface Prisma__ClientClient<T, Null = never, ExtArgs extends runtime.T
   roles<T extends Prisma.Client$rolesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Client$rolesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   branches<T extends Prisma.Client$branchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Client$branchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   announcements<T extends Prisma.Client$announcementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Client$announcementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AnnouncementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  qrisAccounts<T extends Prisma.Client$qrisAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Client$qrisAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QrisAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  qrisTransactions<T extends Prisma.Client$qrisTransactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Client$qrisTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QrisTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  products<T extends Prisma.Client$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Client$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  diningTables<T extends Prisma.Client$diningTablesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Client$diningTablesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DiningTablePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  orders<T extends Prisma.Client$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Client$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2063,6 +2853,126 @@ export type Client$announcementsArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.AnnouncementScalarFieldEnum | Prisma.AnnouncementScalarFieldEnum[]
+}
+
+/**
+ * Client.qrisAccounts
+ */
+export type Client$qrisAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the QrisAccount
+   */
+  select?: Prisma.QrisAccountSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the QrisAccount
+   */
+  omit?: Prisma.QrisAccountOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.QrisAccountInclude<ExtArgs> | null
+  where?: Prisma.QrisAccountWhereInput
+  orderBy?: Prisma.QrisAccountOrderByWithRelationInput | Prisma.QrisAccountOrderByWithRelationInput[]
+  cursor?: Prisma.QrisAccountWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.QrisAccountScalarFieldEnum | Prisma.QrisAccountScalarFieldEnum[]
+}
+
+/**
+ * Client.qrisTransactions
+ */
+export type Client$qrisTransactionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the QrisTransaction
+   */
+  select?: Prisma.QrisTransactionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the QrisTransaction
+   */
+  omit?: Prisma.QrisTransactionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.QrisTransactionInclude<ExtArgs> | null
+  where?: Prisma.QrisTransactionWhereInput
+  orderBy?: Prisma.QrisTransactionOrderByWithRelationInput | Prisma.QrisTransactionOrderByWithRelationInput[]
+  cursor?: Prisma.QrisTransactionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.QrisTransactionScalarFieldEnum | Prisma.QrisTransactionScalarFieldEnum[]
+}
+
+/**
+ * Client.products
+ */
+export type Client$productsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Product
+   */
+  select?: Prisma.ProductSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Product
+   */
+  omit?: Prisma.ProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
+  where?: Prisma.ProductWhereInput
+  orderBy?: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[]
+  cursor?: Prisma.ProductWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProductScalarFieldEnum | Prisma.ProductScalarFieldEnum[]
+}
+
+/**
+ * Client.diningTables
+ */
+export type Client$diningTablesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DiningTable
+   */
+  select?: Prisma.DiningTableSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DiningTable
+   */
+  omit?: Prisma.DiningTableOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DiningTableInclude<ExtArgs> | null
+  where?: Prisma.DiningTableWhereInput
+  orderBy?: Prisma.DiningTableOrderByWithRelationInput | Prisma.DiningTableOrderByWithRelationInput[]
+  cursor?: Prisma.DiningTableWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DiningTableScalarFieldEnum | Prisma.DiningTableScalarFieldEnum[]
+}
+
+/**
+ * Client.orders
+ */
+export type Client$ordersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Order
+   */
+  select?: Prisma.OrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Order
+   */
+  omit?: Prisma.OrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderInclude<ExtArgs> | null
+  where?: Prisma.OrderWhereInput
+  orderBy?: Prisma.OrderOrderByWithRelationInput | Prisma.OrderOrderByWithRelationInput[]
+  cursor?: Prisma.OrderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
 }
 
 /**

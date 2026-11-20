@@ -62,7 +62,14 @@ export const ModelName = {
   Announcement: 'Announcement',
   Plan: 'Plan',
   Membership: 'Membership',
-  Client: 'Client'
+  Client: 'Client',
+  QrisAccount: 'QrisAccount',
+  QrisTransaction: 'QrisTransaction',
+  WebhookDelivery: 'WebhookDelivery',
+  Product: 'Product',
+  DiningTable: 'DiningTable',
+  Order: 'Order',
+  OrderItem: 'OrderItem'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -93,7 +100,9 @@ export const UserScalarFieldEnum = {
   banReason: 'banReason',
   banned: 'banned',
   role: 'role',
-  clientId: 'clientId'
+  clientId: 'clientId',
+  otpVerifiedAt: 'otpVerifiedAt',
+  otpSentAt: 'otpSentAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -196,7 +205,6 @@ export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof Role
 
 export const BranchScalarFieldEnum = {
   id: 'id',
-  code: 'code',
   name: 'name',
   description: 'description',
   isActive: 'isActive',
@@ -295,6 +303,123 @@ export const ClientScalarFieldEnum = {
 export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof ClientScalarFieldEnum]
 
 
+export const QrisAccountScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  label: 'label',
+  staticPayload: 'staticPayload',
+  merchantName: 'merchantName',
+  merchantCity: 'merchantCity',
+  merchantNmid: 'merchantNmid',
+  webhookUrl: 'webhookUrl',
+  webhookSecret: 'webhookSecret',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type QrisAccountScalarFieldEnum = (typeof QrisAccountScalarFieldEnum)[keyof typeof QrisAccountScalarFieldEnum]
+
+
+export const QrisTransactionScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  accountId: 'accountId',
+  orderId: 'orderId',
+  amount: 'amount',
+  dynamicPayload: 'dynamicPayload',
+  status: 'status',
+  expiresAt: 'expiresAt',
+  paidAt: 'paidAt',
+  confirmedBy: 'confirmedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type QrisTransactionScalarFieldEnum = (typeof QrisTransactionScalarFieldEnum)[keyof typeof QrisTransactionScalarFieldEnum]
+
+
+export const WebhookDeliveryScalarFieldEnum = {
+  id: 'id',
+  transactionId: 'transactionId',
+  event: 'event',
+  url: 'url',
+  payload: 'payload',
+  statusCode: 'statusCode',
+  attempts: 'attempts',
+  ok: 'ok',
+  error: 'error',
+  createdAt: 'createdAt',
+  deliveredAt: 'deliveredAt'
+} as const
+
+export type WebhookDeliveryScalarFieldEnum = (typeof WebhookDeliveryScalarFieldEnum)[keyof typeof WebhookDeliveryScalarFieldEnum]
+
+
+export const ProductScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  name: 'name',
+  description: 'description',
+  category: 'category',
+  price: 'price',
+  imageUrl: 'imageUrl',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
+
+
+export const DiningTableScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  code: 'code',
+  label: 'label',
+  token: 'token',
+  qrisAccountId: 'qrisAccountId',
+  branchId: 'branchId',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DiningTableScalarFieldEnum = (typeof DiningTableScalarFieldEnum)[keyof typeof DiningTableScalarFieldEnum]
+
+
+export const OrderScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  tableId: 'tableId',
+  branchId: 'branchId',
+  customerName: 'customerName',
+  note: 'note',
+  status: 'status',
+  orderType: 'orderType',
+  paymentMethod: 'paymentMethod',
+  total: 'total',
+  qrisTransactionId: 'qrisTransactionId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const OrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  productId: 'productId',
+  productName: 'productName',
+  unitPrice: 'unitPrice',
+  qty: 'qty',
+  note: 'note'
+} as const
+
+export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -309,6 +434,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

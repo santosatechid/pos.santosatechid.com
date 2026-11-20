@@ -10,18 +10,20 @@ datasource db {
 }
 
 model User {
-  id            String    @id @unique
+  id            String      @id @unique
   name          String
-  email         String    @unique
+  email         String      @unique
   emailVerified Boolean
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   banExpires    DateTime?
   banReason     String?
-  banned        Boolean?  @default(false)
+  banned        Boolean?    @default(false)
   role          String?   @default("user")
   clientId      String?
+  otpVerifiedAt DateTime?
+  otpSentAt     DateTime?
   accounts      Account[]
   sessions      Session[]
   userData      UserData?
@@ -131,14 +133,14 @@ model UserData {
 }
 
 model Role {
-  id           String     @id @default(cuid())
-  name         String
-  description  String
-  clientId     String?
-  permissions  String[]
-  isActive     Boolean    @default(true)
-  userData     UserData[]
-  client       Client?    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  id          String     @id @default(cuid())
+  name        String
+  description String
+  clientId    String?
+  permissions String[]
+  isActive    Boolean    @default(true)
+  userData    UserData[]
+  client      Client?    @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@unique([clientId, name])
   @@index([clientId])
@@ -147,7 +149,6 @@ model Role {
 
 model Branch {
   id           String     @id @default(cuid())
-  code         String
   name         String
   description  String?
   isActive     Boolean    @default(true)
@@ -159,9 +160,10 @@ model Branch {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   users        UserData[] @relation("UserBranch")
+  tables       DiningTable[]
+  orders       Order[]
   client       Client?    @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-  @@unique([clientId, code])
   @@index([clientId])
   @@map("branches")
 }
@@ -186,21 +188,21 @@ model Notification {
 }
 
 model Announcement {
-  id           String    @id @default(cuid())
-  title        String
-  content      String
-  imageUrl     String?
-  linkUrl      String?
-  startDate    DateTime?
-  endDate      DateTime?
-  userId       String?
-  clientId     String
-  isActive     Boolean   @default(true)
-  isPublished  Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  user         UserData? @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client       Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  id          String    @id @default(cuid())
+  title       String
+  content     String
+  imageUrl    String?
+  linkUrl     String?
+  startDate   DateTime?
+  endDate     DateTime?
+  userId      String?
+  clientId    String
+  isActive    Boolean   @default(true)
+  isPublished Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        UserData? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([clientId])
   @@map("announcements")
@@ -241,21 +243,171 @@ model Membership {
 }
 
 model Client {
-  id            String         @id @default(cuid())
-  name          String
-  slug          String         @unique
-  email         String?
-  phone         String?
-  address       String?
-  logoUrl       String?
-  isActive      Boolean        @default(true)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  users         User[]
-  userData      UserData[]
-  roles         Role[]
-  branches      Branch[]
-  announcements Announcement[]
+  id               String            @id @default(cuid())
+  name             String
+  slug             String            @unique
+  email            String?
+  phone            String?
+  address          String?
+  logoUrl          String?
+  isActive         Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  users            User[]
+  userData         UserData[]
+  roles            Role[]
+  branches         Branch[]
+  announcements    Announcement[]
+  qrisAccounts     QrisAccount[]
+  qrisTransactions QrisTransaction[]
+  products         Product[]
+  diningTables     DiningTable[]
+  orders           Order[]
 
   @@map("clients")
+}
+
+model QrisAccount {
+  id            String            @id @default(cuid())
+  clientId      String
+  label         String
+  staticPayload String            @db.Text
+  merchantName  String
+  merchantCity  String
+  merchantNmid  String?
+  webhookUrl    String?
+  webhookSecret String
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  client        Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  transactions  QrisTransaction[]
+  tables        DiningTable[]
+
+  @@unique([clientId, label])
+  @@index([clientId])
+  @@map("qris_accounts")
+}
+
+model QrisTransaction {
+  id             String            @id @default(cuid())
+  clientId       String
+  accountId      String
+  orderId        String
+  amount         Int
+  dynamicPayload String            @db.Text
+  status         String            @default("pending")
+  expiresAt      DateTime
+  paidAt         DateTime?
+  confirmedBy    String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  client         Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  account        QrisAccount       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  deliveries     WebhookDelivery[]
+  order          Order?            @relation("OrderPayment")
+
+  @@unique([clientId, orderId])
+  @@index([clientId, status])
+  @@index([accountId])
+  @@map("qris_transactions")
+}
+
+model WebhookDelivery {
+  id            String          @id @default(cuid())
+  transactionId String
+  event         String
+  url           String
+  payload       Json
+  statusCode    Int?
+  attempts      Int             @default(0)
+  ok            Boolean         @default(false)
+  error         String?
+  createdAt     DateTime        @default(now())
+  deliveredAt   DateTime?
+  transaction   QrisTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([transactionId])
+  @@map("qris_webhook_deliveries")
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  clientId    String
+  name        String
+  description String?
+  category    String?
+  price       Int
+  imageUrl    String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  client      Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+
+  @@index([clientId])
+  @@map("products")
+}
+
+model DiningTable {
+  id            String       @id @default(cuid())
+  clientId      String
+  code          String
+  label         String?
+  token         String       @unique @default(cuid())
+  qrisAccountId String?
+  branchId      String?
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  client        Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  qrisAccount   QrisAccount? @relation(fields: [qrisAccountId], references: [id], onDelete: SetNull)
+  branch        Branch?      @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  orders        Order[]
+
+  @@unique([clientId, code])
+  @@index([clientId])
+  @@index([branchId])
+  @@map("dining_tables")
+}
+
+model Order {
+  id                String           @id @default(cuid())
+  clientId          String
+  tableId           String?
+  branchId          String?
+  customerName      String?
+  note              String?
+  status            String           @default("pending")
+  orderType         String           @default("dine-in")
+  paymentMethod     String           @default("qris")
+  total             Int
+  qrisTransactionId String?          @unique
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  client            Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  table             DiningTable?     @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  branch            Branch?          @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  items             OrderItem[]
+  qrisTransaction   QrisTransaction? @relation("OrderPayment", fields: [qrisTransactionId], references: [id], onDelete: SetNull)
+
+  @@index([clientId, status])
+  @@index([tableId])
+  @@index([branchId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String?
+  productName String
+  unitPrice   Int
+  qty         Int
+  note        String?
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@map("order_items")
 }

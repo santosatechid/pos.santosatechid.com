@@ -22,11 +22,19 @@ Starter SaaS multi-tenant: autentikasi, onboarding client, role & branch, manaje
 
 - Auth email/password + Google, session cookie cache 30 menit, admin plugin.
 - Multi-tenant: setiap `Client` memiliki `User`, `UserData`, `Role`, `Branch`, dan `Announcement`.
-- Onboarding otomatis membuat client + role Admin + branch `MAIN` + `userData` dalam satu transaksi.
+- Onboarding otomatis membuat client + role Admin + role Kasir + branch `MAIN` + `userData` dalam satu transaksi.
 - Dashboard: statistik user/role/branch, user terbaru, status WhatsApp.
-- Master data: CRUD users, roles, branches; sinkronisasi user Better Auth.
+- Master data: CRUD users, roles, branches. Membuat user langsung mendaftarkan akun login email/password (Better Auth) dan mengaitkan branch.
+- Role default per client: Admin dan Kasir. Kasir hanya melihat Dashboard, Profile, dan QRIS & Meja.
+- Coba Gratis → Google OAuth → OTP 6 digit via Resend → onboarding/dashboard.
+- Google user wajib verifikasi OTP sekali; email/password buatan admin tidak dipaksa OTP.
 - Profil pengguna.
 - WhatsApp: kirim tunggal, kirim massal lewat queue, retry 1s → 5s → 30s, dan DLQ.
+- QRIS: upload QRIS statis (gambar/payload), generate QRIS dinamis, konfirmasi manual, webhook outbound bertanda tangan HMAC-SHA256.
+- Dashboard POS: tipe pesanan (dine-in/bawa pulang/diantar), pilih meja, keranjang, dan pembayaran QRIS. Kasir bisa membuat pesanan langsung dari dashboard.
+- Laporan pesanan: grafik omzet 14 hari, tren 6 bulan, dan komposisi tipe pesanan di halaman Pesanan.
+- Dock bawah di `/dashboard`: Kasir, Pesanan, Produk, Meja, QRIS, Cabang, Profil.
+- Meja: QR permanen per meja → halaman pesan publik → pesanan → pembayaran QRIS dinamis.
 - Health check database di `/api/health`.
 - PWA (install prompt) saat build production.
 
@@ -35,16 +43,22 @@ Starter SaaS multi-tenant: autentikasi, onboarding client, role & branch, manaje
 ```text
 app/
   api/<resource>/route.ts        # HTTP boundary
+  api/qris/                      # akun, transaksi, konfirmasi, webhook
+  api/public/orders/             # pesanan publik dari QR meja
   (public)/                      # landing + auth
   (dashboard)/dashboard/         # halaman setelah login
+  t/[token]/                     # halaman pesan pelanggan
   onboarding/                    # pembuatan client pertama
 components/
   ui/                            # primitive shadcn
   entry/                         # komponen halaman auth
-  layout/                        # sidebar, shell, footer
+  layout/                        # shell + bottom dock
+  qris/                          # workspace QRIS + meja
+  order/                         # halaman pesan publik
   <fitur>/                       # komponen per fitur
 hooks/<resource>/use<Resource>.ts # semua akses API dari client
 lib/http/apiClient.ts            # wrapper fetch
+lib/qris/                        # parser, converter, validator QRIS (MIT)
 prisma/
   schema.prisma                  # model + relasi
   migrations/                    # migrasi
@@ -54,12 +68,13 @@ services/
   prisma.ts                      # singleton PrismaClient
   clients.ts                     # resolusi tenant + onboarding
   errorHandler.ts                # pemetaan error Prisma → HTTP
+  qris/                          # akun, transaksi, webhook, produk, meja, order
   auth/                          # Better Auth server & client
   whatsapp/                      # Evolution API
   rabbitmq/                      # koneksi, topologi, retry
 types/                           # tipe bersama
 worker/whatsappWorker.ts         # consumer RabbitMQ
-config/menuGroupsSidebar.ts      # menu dashboard
+config/menuGroups.ts             # menu dashboard
 ```
 
 ## Alur Request
@@ -78,6 +93,68 @@ Aturan lengkap ada di `AGENTS.md`. Ringkasnya:
 1. Backend dulu: `prisma/schema.prisma` → migrasi → route.
 2. Buat hook di `hooks/<resource>/`.
 3. Komponen hanya memakai hook; **jangan** import `apiGet/apiPost` langsung dan jangan pakai `useState` untuk loading request server.
+
+## QRIS & Meja
+
+QRIS statis merchant divalidasi TLV + CRC16, lalu nominal disuntikkan untuk membuat QRIS dinamis. QRIS statis tidak mengirim notifikasi pembayaran, jadi status **lunas dikonfirmasi manual** oleh admin/kasir; setelah itu webhook dikirim ke URL merchant.
+
+```mermaid
+flowchart LR
+  A[Upload QRIS statis] --> B[(qris_accounts)]
+  B --> C[QRIS dinamis]
+  C --> D[Pesanan meja / transaksi]
+  D --> E{Konfirmasi manual}
+  E -->|lunas| F[Webhook qris.paid]
+  E -->|lewat 15 menit| G[expired]
+```
+
+Alur meja:
+
+1. Admin membuat produk dan meja di **Dashboard → Utilitas → QRIS & Meja**.
+2. QR permanen meja berisi `${origin}/t/<token>`; cetak dan tempel di meja.
+3. Pelanggan memindai, memilih menu, lalu membuat pesanan.
+4. Server membuat `Order` + `QrisTransaction` berisi QRIS dinamis sesuai total.
+5. Kasir menekan **Konfirmasi lunas**; pesanan menjadi `paid` dan webhook dikirim.
+6. Halaman pelanggan mem-poll status setiap 5 detik sampai `paid`/`expired`.
+
+Endpoint utama:
+
+| Method | Path | Keterangan |
+| ------ | ---- | ---------- |
+| GET/POST/PUT/DELETE | `/api/qris/accounts` | CRUD QRIS statis + konfigurasi webhook |
+| GET/POST | `/api/qris/transactions` | Daftar/buat QRIS dinamis |
+| POST | `/api/qris/transactions/:id/confirm` | Konfirmasi lunas (idempoten) |
+| POST | `/api/qris/transactions/:id/webhook` | Kirim ulang webhook |
+| GET/POST/PUT/DELETE | `/api/products` | CRUD menu |
+| GET/POST/PUT/DELETE | `/api/tables` | CRUD meja + token QR |
+| `GET` | `/api/orders` | Daftar pesanan tenant |
+| `GET` | `/api/orders/stats` | Agregat omzet harian/bulanan/tipe |
+| `POST` | `/api/orders/pos` | Buat pesanan dari kasir (auth) |
+| POST | `/api/public/orders` | Buat pesanan dari token meja |
+| GET | `/api/public/orders/:id?token=` | Status pesanan publik |
+
+Webhook `qris.paid` memakai header:
+
+```text
+X-Qris-Event: qris.paid
+X-Qris-Delivery: whd_<uuid>
+X-Qris-Timestamp: <unix-seconds>
+X-Qris-Signature: sha256=HMAC_SHA256(secret, "<timestamp>.<raw-body>")
+```
+
+Verifikasi di sisi penerima:
+
+```ts
+const expected = `sha256=${createHmac("sha256", secret)
+  .update(`${timestamp}.${rawBody}`)
+  .digest("hex")}`;
+if (expected !== signature) return new Response("invalid", { status: 401 });
+```
+
+Webhook dicoba 3× (0s, 1s, 3s, timeout 5s) dan hasilnya tercatat di `qris_webhook_deliveries`. URL webhook menolak `localhost`/IP privat (SSRF). Secret hanya ditampilkan sekali saat dibuat/dirotasi.
+
+Komponen animasi memakai [Rare UI](https://rareui.com) (`@rare-ui`) dengan Motion: counter statistik, fluid orb, dan transisi panel/kartu. Registri terdaftar di `components.json`; komponen vendored ada di `components/ui/animated-counter.tsx` dan `components/ui/fluid-orb.tsx`.
+
 
 ## Setup Lokal
 
@@ -126,12 +203,14 @@ Buat `.env` di root. File ini tidak ikut git.
 | `BETTER_AUTH_URL`              | Ya    | Base URL aplikasi, mis. `http://localhost:3000` |
 | `GOOGLE_CLIENT_ID`             | Tidak | Diperlukan jika login Google dipakai            |
 | `GOOGLE_CLIENT_SECRET`         | Tidak | Pasangan `GOOGLE_CLIENT_ID`                     |
+| `RESEND_API_KEY`               | Ya    | Kirim OTP verifikasi email via Resend           |
+| `RESEND_FROM_EMAIL`            | Ya    | Pengirim OTP, mis. `Santosa POS <noreply@santosatechid.cloud>` |
 | `NEXT_PUBLIC_CLIENT_NAME`      | Tidak | Nama aplikasi di metadata                       |
 | `CLIENT_FAVICON`               | Tidak | Path favicon                                    |
 | `CLIENT_APPLE_ICON`            | Tidak | Path apple touch icon                           |
 | `NEXT_PUBLIC_CLIENT_ID`        | Tidak | Branding di landing; belum dipakai fungsional   |
 | `NEXT_PUBLIC_CLIENT_IMAGE_URL` | Tidak | Branding di landing; belum dipakai fungsional   |
-| `NEXT_PUBLIC_FILESERVER_URL`   | Tidak | Endpoint upload tanda tangan branch             |
+| `NEXT_PUBLIC_FILESERVER_URL`   | Ya    | Upload gambar produk dan tanda tangan branch    |
 | `NEXT_PUBLIC_EVO_URL`          | Tidak | Base URL Evolution API                          |
 | `NEXT_PUBLIC_EVO_APIKEY`       | Tidak | API key Evolution API                           |
 | `NEXT_PUBLIC_EVO_INSTANCE`     | Tidak | Nama instance, default `fajarsentosa`           |
@@ -216,20 +295,15 @@ bunx prisma migrate dev --name add_invoice
 | Hook                                                            | Endpoint                                    | Jenis              |
 | --------------------------------------------------------------- | ------------------------------------------- | ------------------ |
 | `useGetUsers()`                                                 | `GET /api/users`                            | query              |
-| `useCreateUser()`                                               | `POST /api/users`                           | mutation           |
+| `useCreateUser()`                                               | `POST /api/users`                           | mutation + register |
 | `useUpdateUser()`                                               | `PUT /api/users`                            | mutation           |
 | `useDeleteUser()`                                               | `DELETE /api/users`                         | mutation           |
-| `useGetUserByIdBetterAuth(id)`                                  | `GET /api/users/byAuth/[id]`                | query              |
-| `useGetUserByIdBetterAuthProfile(id)`                           | `GET /api/users/byAuth/[id]`                | query + retry      |
 | `useGetRoles()`                                                 | `GET /api/roles`                            | query              |
 | `useCreateRole()` / `useUpdateRole()` / `useDeleteRole()`       | `/api/roles`                                | mutation           |
 | `useGetBranchs()`                                               | `GET /api/branches`                         | query              |
 | `useCreateBranch()` / `useUpdateBranch()` / `useDeleteBranch()` | `/api/branches`                             | mutation           |
 | `useGetClient()`                                                | `GET /api/clients`                          | query              |
 | `useCreateClient()`                                             | `POST /api/clients`                         | mutation           |
-| `useGetBetterAuth()`                                            | `GET /api/betterAuth/users`                 | query              |
-| `useGetBetterAuthById(userId)`                                  | `POST /api/betterAuth/users`                | query              |
-| `useGetBetterAuthWithoutUserData(clientId?)`                    | `GET /api/betterAuth/users/withoutUserData` | query              |
 | `useGetConnectionBotWa()`                                       | `GET /api/whatsapp/bulk/send`               | query, refetch 30s |
 | `useIsMobile()`                                                 | —                                           | media query        |
 
@@ -296,9 +370,11 @@ import {
 | `GET`                          | `/api/health`                           | Publik                             |
 | `*`                            | `/api/auth/[...all]`                    | Publik (Better Auth)               |
 | `GET`, `POST`                  | `/api/clients`                          | Session; belum butuh `clientId`    |
-| `GET`, `POST`, `PUT`, `DELETE` | `/api/users`                            | Tenant (`resolveClient`)           |
+| `GET`, `POST`, `PUT`, `DELETE` | `/api/users`                            | Tenant; POST/PUT/DELETE admin only |
 | `GET`                          | `/api/users/[id]`                       | Tenant                             |
 | `GET`                          | `/api/users/byAuth/[id]`                | Tenant                             |
+| `POST`                         | `/api/auth/otp/start`                   | Session; kirim OTP via Resend      |
+| `POST`                         | `/api/auth/otp/verify`                  | Session; verifikasi OTP 6 digit    |
 | `GET`, `POST`, `PUT`, `DELETE` | `/api/roles`                            | Tenant                             |
 | `GET`                          | `/api/roles/byUser/[id]`                | Tenant                             |
 | `GET`, `POST`, `PUT`, `DELETE` | `/api/branches`                         | Tenant                             |

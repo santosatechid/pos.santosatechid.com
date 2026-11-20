@@ -77,3 +77,38 @@ export type Membership = Prisma.MembershipModel
  * 
  */
 export type Client = Prisma.ClientModel
+/**
+ * Model QrisAccount
+ * 
+ */
+export type QrisAccount = Prisma.QrisAccountModel
+/**
+ * Model QrisTransaction
+ * 
+ */
+export type QrisTransaction = Prisma.QrisTransactionModel
+/**
+ * Model WebhookDelivery
+ * 
+ */
+export type WebhookDelivery = Prisma.WebhookDeliveryModel
+/**
+ * Model Product
+ * 
+ */
+export type Product = Prisma.ProductModel
+/**
+ * Model DiningTable
+ * 
+ */
+export type DiningTable = Prisma.DiningTableModel
+/**
+ * Model Order
+ * 
+ */
+export type Order = Prisma.OrderModel
+/**
+ * Model OrderItem
+ * 
+ */
+export type OrderItem = Prisma.OrderItemModel

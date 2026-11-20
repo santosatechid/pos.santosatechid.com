@@ -5,16 +5,64 @@ import { type NextRequest, NextResponse } from "next/server";
 export const ALL_PERMISSIONS = [
   "/",
   "/dashboard",
-  "/dashboard/profile",
   "/dashboard/admin/master/users",
   "/dashboard/admin/master/roles",
   "/dashboard/admin/master/branches",
-  "/dashboard/admin/master/betterAuth",
   "/dashboard/admin/utility/whatsapp",
+  "/dashboard/admin/utility/qris/accounts",
+  "/dashboard/admin/utility/qris/transactions",
+  "/dashboard/admin/utility/qris/products",
+  "/dashboard/admin/utility/qris/tables",
+  "/dashboard/admin/utility/qris/orders",
 ];
 
+export const KASIR_PERMISSIONS = [
+  "/",
+  "/dashboard",
+  "/dashboard/admin/utility/qris/accounts",
+  "/dashboard/admin/utility/qris/transactions",
+  "/dashboard/admin/utility/qris/products",
+  "/dashboard/admin/utility/qris/tables",
+  "/dashboard/admin/utility/qris/orders",
+];
+
+/**
+ * Role Kasir dibuat untuk client lama yang belum punya. Idempoten dan aman
+ * dipanggil dari route daftar role.
+ */
+export async function ensureClientRoles(clientId: string) {
+  const existing = await prisma.role.findUnique({
+    where: { clientId_name: { clientId, name: "Kasir" } },
+    select: { id: true, permissions: true },
+  });
+
+  if (!existing) {
+    await prisma.role.upsert({
+      where: { clientId_name: { clientId, name: "Kasir" } },
+      create: {
+        clientId,
+        name: "Kasir",
+        description: "Akses kasir: QRIS, pesanan, dan konfirmasi pembayaran",
+        permissions: KASIR_PERMISSIONS,
+      },
+      update: {},
+    });
+    return;
+  }
+
+  if (existing.permissions.join("|") !== KASIR_PERMISSIONS.join("|")) {
+    await prisma.role.update({
+      where: { id: existing.id },
+      data: {
+        permissions: KASIR_PERMISSIONS,
+        description: "Akses kasir: QRIS, pesanan, dan konfirmasi pembayaran",
+      },
+    });
+  }
+}
+
 export type ClientContext =
-  | { ok: true; clientId: string; userId: string }
+  | { ok: true; clientId: string; userId: string; branchId: string | null }
   | { ok: false; response: NextResponse };
 
 export function clientUnauthorized(message = "Sesi tidak ditemukan") {
@@ -45,7 +93,7 @@ export async function resolveClient(
     }),
     prisma.userData.findUnique({
       where: { userId },
-      select: { clientId: true },
+      select: { clientId: true, branchId: true },
     }),
   ]);
 
@@ -60,7 +108,7 @@ export async function resolveClient(
     };
   }
 
-  return { ok: true, clientId, userId };
+  return { ok: true, clientId, userId, branchId: userData?.branchId ?? null };
 }
 
 function slugify(value: string): string {
@@ -110,11 +158,19 @@ export async function createClientForUser(
       },
     });
 
+    await tx.role.create({
+      data: {
+        clientId: client.id,
+        name: "Kasir",
+        description: "Akses kasir: QRIS, pesanan, dan konfirmasi pembayaran",
+        permissions: KASIR_PERMISSIONS,
+      },
+    });
+
     const branch = await tx.branch.create({
       data: {
         clientId: client.id,
-        code: "MAIN",
-        name: "Main",
+        name: "Utama",
       },
     });
 
