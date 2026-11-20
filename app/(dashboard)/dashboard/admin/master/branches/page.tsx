@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, type ChangeEvent } from "react";
+import { useState, useEffect } from "react";
 
 import {
   type BranchRecord,
@@ -9,8 +9,10 @@ import {
   useUpdateBranch,
 } from "@/hooks/branches/useBranches";
 import { useGetUserByIdBetterAuth } from "@/hooks/users/useUsersByIdBetterAuth";
+import { useResetUserPassword } from "@/hooks/users/useUsers";
 import { getErrorMessage } from "@/types";
 import Loading from "@/components/common/loading";
+import CopyButton from "@/components/qris/CopyButton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +29,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -70,16 +73,13 @@ import {
   ArrowUpDown,
   ChevronDown,
   Eye,
+  KeyRound,
   MoreHorizontal,
   Pencil,
-  PenLine,
   Plus,
   Search,
   Trash2,
-  Upload,
-  X,
 } from "lucide-react";
-import Image from "next/image";
 import { unauthorized } from "next/navigation";
 
 import { useForm } from "react-hook-form";
@@ -91,222 +91,18 @@ export type BranchData = BranchRecord;
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 const branchSchema = z.object({
-  code: z
-    .string()
-    .min(1, "Kode Branch wajib diisi")
-    .max(10, "Kode maksimal 10 karakter"),
   name: z
     .string()
-    .min(1, "Nama Branch wajib diisi")
+    .min(1, "Nama Cabang wajib diisi")
     .max(100, "Nama maksimal 100 karakter"),
   description: z.string().optional(),
   address: z.string().optional(),
-  phone: z.string().optional(),
   isActive: z.boolean(),
-  adminName: z.string().optional(),
-  signatureUrl: z.string().optional(),
+  cashierName: z.string().optional(),
+  cashierEmail: z.string().optional(),
 });
 
 type BranchFormValues = z.infer<typeof branchSchema>;
-
-// ─── SignatureUpload Component ────────────────────────────────────────────────
-// Mengikuti pola AvatarUpload persis, disesuaikan untuk tanda tangan
-function SignatureUpload({
-  currentSignatureUrl,
-  onUploadSuccess,
-  disabled = false,
-}: {
-  currentSignatureUrl?: string;
-  onUploadSuccess: (url: string) => void;
-  disabled?: boolean;
-}) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    currentSignatureUrl || null,
-  );
-  const [isUploading, setIsUploading] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Sync ketika prop berubah (mis. saat edit)
-  useEffect(() => {
-    setPreviewUrl(currentSignatureUrl || null);
-  }, [currentSignatureUrl]);
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("File tidak boleh lebih dari 5MB");
-      return;
-    }
-    if (!file.type.startsWith("image/")) {
-      toast.error("File harus berupa gambar (JPG, PNG, dll.)");
-      return;
-    }
-    // Tampilkan preview lokal sebelum upload
-    const reader = new FileReader();
-    reader.onloadend = () => setPreviewUrl(reader.result as string);
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemove = () => {
-    if (fileInputRef.current) {
-      try {
-        fileInputRef.current.value = "";
-      } catch {
-        /* ignore */
-      }
-    }
-    setPreviewUrl(null);
-    setShowPreview(false);
-    onUploadSuccess(""); // beritahu parent bahwa tanda tangan dihapus
-    toast.success("Tanda tangan dihapus");
-  };
-
-  const handleUpload = async () => {
-    const file = fileInputRef.current?.files?.[0];
-    if (!file) {
-      toast.error("Silakan pilih file terlebih dahulu");
-      return;
-    }
-    setIsUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_FILESERVER_URL}`, {
-        method: "POST",
-        body: formData,
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Gagal mengupload file");
-      }
-      const data = await res.json();
-      if (!data.fileUrl)
-        throw new Error("URL file tidak ditemukan dalam respons server");
-      setPreviewUrl(data.fileUrl);
-      onUploadSuccess(data.fileUrl);
-      toast.success("Tanda tangan berhasil diunggah!");
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      <Label>
-        Tanda Tangan Bendahara{" "}
-        <span className="text-muted-foreground text-xs">(opsional)</span>
-      </Label>
-
-      <div className="flex items-start gap-4">
-        {/* Preview area */}
-        <div className="relative shrink-0">
-          {previewUrl ? (
-            <div className="group relative">
-              {/* Tanda tangan ditampilkan dalam kotak persegi panjang landscape */}
-              <div className="bg-card flex h-20 w-36 items-center justify-center overflow-hidden rounded-2xl border-2">
-                <Image
-                  src={previewUrl}
-                  alt="Preview tanda tangan"
-                  width={144}
-                  height={80}
-                  className="h-full w-full object-contain"
-                />
-              </div>
-              {/* Overlay hover untuk preview fullscreen */}
-              <div className="bg-navy/40 absolute inset-0 flex items-center justify-center rounded-2xl opacity-0 transition-opacity group-hover:opacity-100">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 w-7 p-0 text-white hover:text-white"
-                  onClick={() => setShowPreview(true)}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ) : (
-            /* Placeholder ketika belum ada tanda tangan */
-            <div className="bg-muted flex h-20 w-36 flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed">
-              <PenLine className="text-muted-foreground h-6 w-6" />
-              <span className="text-muted-foreground text-xs">Belum ada</span>
-            </div>
-          )}
-        </div>
-
-        {/* Upload controls */}
-        <div className="flex-1 space-y-2">
-          <Input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            disabled={disabled || isUploading}
-          />
-
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleUpload}
-              disabled={
-                disabled || isUploading || !fileInputRef.current?.files?.[0]
-              }
-              className="flex-1"
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              {isUploading ? "Mengunggah..." : "Upload Tanda Tangan"}
-            </Button>
-
-            {previewUrl && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleRemove}
-                disabled={disabled || isUploading}
-                title="Hapus tanda tangan"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-
-          <p className="text-muted-foreground text-xs">
-            Disarankan: latar belakang putih/transparan. Format JPG, PNG. Maks.
-            5MB.
-          </p>
-        </div>
-      </div>
-
-      {/* Fullscreen preview dialog */}
-      {previewUrl && (
-        <Dialog open={showPreview} onOpenChange={setShowPreview}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Preview Tanda Tangan</DialogTitle>
-            </DialogHeader>
-            <div className="bg-muted/50 flex min-h-32 items-center justify-center rounded-3xl p-4">
-              <Image
-                src={previewUrl}
-                alt="Preview tanda tangan"
-                className="max-h-64 max-w-full rounded-2xl object-contain"
-                width={400}
-                height={200}
-              />
-            </div>
-            <p className="text-muted-foreground text-center text-xs">
-              Tanda tangan akan muncul di dokumen resmi seperti kwitansi.
-            </p>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
-  );
-}
 
 // ─── BranchFormDialog ──────────────────────────────────────────────────────────
 function BranchFormDialog({
@@ -322,6 +118,11 @@ function BranchFormDialog({
 }) {
   const createBranch = useCreateBranch();
   const updateBranch = useUpdateBranch();
+  const [credentials, setCredentials] = useState<{
+    branchName: string;
+    email: string;
+    password: string;
+  } | null>(null);
 
   const {
     register,
@@ -333,39 +134,30 @@ function BranchFormDialog({
   } = useForm<BranchFormValues>({
     resolver: zodResolver(branchSchema),
     defaultValues: {
-      code: "",
       name: "",
       description: "",
       address: "",
-      phone: "",
-      adminName: "",
-      signatureUrl: "",
+      cashierName: "",
+      cashierEmail: "",
       isActive: true,
     },
   });
 
   const isActive = watch("isActive");
-  const signatureUrl = watch("signatureUrl");
 
   useEffect(() => {
     if (editData) {
-      setValue("code", editData.code);
       setValue("name", editData.name);
       setValue("description", editData.description || "");
       setValue("address", editData.address || "");
-      setValue("phone", editData.phone || "");
       setValue("isActive", editData.isActive);
-      setValue("adminName", editData.adminName || "");
-      setValue("signatureUrl", editData.signatureUrl || "");
     } else {
       reset({
-        code: "",
         name: "",
         description: "",
-        phone: "",
         address: "",
-        adminName: "",
-        signatureUrl: "",
+        cashierName: "",
+        cashierEmail: "",
         isActive: true,
       });
     }
@@ -375,13 +167,38 @@ function BranchFormDialog({
     try {
       if (editData) {
         await updateBranch.mutateAsync({
-          ...data,
           id: editData.id,
+          name: data.name,
+          description: data.description,
+          address: data.address,
+          isActive: data.isActive,
         });
-        toast.success("Branch berhasil diperbarui!");
+        toast.success("Cabang berhasil diperbarui!");
       } else {
-        await createBranch.mutateAsync(data);
-        toast.success("Branch berhasil dibuat!");
+        const cashierName = data.cashierName?.trim() ?? "";
+        const cashierEmail = data.cashierEmail?.trim() ?? "";
+
+        if (!cashierName || !cashierEmail) {
+          toast.error("Nama dan email kasir wajib diisi.");
+          return;
+        }
+
+        const created = await createBranch.mutateAsync({
+          name: data.name,
+          description: data.description,
+          address: data.address,
+          isActive: data.isActive,
+          cashier: { name: cashierName, email: cashierEmail },
+        });
+
+        if (created.cashier) {
+          setCredentials({
+            branchName: data.name,
+            email: created.cashier.email,
+            password: created.cashier.password,
+          });
+        }
+        toast.success("Cabang dan akun kasir berhasil dibuat!");
       }
       reset();
       onOpenChange(false);
@@ -392,157 +209,166 @@ function BranchFormDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-h-[90vh] max-w-lg overflow-y-auto"
-      >
-        <DialogHeader>
-          <DialogTitle>
-            {editData ? "Edit Branch" : "Tambah Branch Baru"}
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editData ? "Edit Cabang" : "Tambah Cabang"}
+            </DialogTitle>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* ── Informasi Utama ── */}
-          <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="code">
-                Kode Branch <span className="text-destructive">*</span>
+              <Label htmlFor="name">
+                Nama Cabang <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="code"
-                placeholder="SMAIT001"
-                {...register("code")}
+                id="name"
+                placeholder="Contoh: Cabang Bandung"
+                {...register("name")}
               />
-              {errors.code && (
+              {errors.name && (
                 <p className="text-destructive text-sm">
-                  {errors.code.message}
+                  {errors.name.message}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label>Status</Label>
-              <div className="flex h-10 items-center gap-2">
-                <Switch
-                  id="isActive"
-                  checked={isActive}
-                  onCheckedChange={(checked) => setValue("isActive", checked)}
+              <Label htmlFor="description">
+                Deskripsi{" "}
+                <span className="text-muted-foreground text-xs">(opsional)</span>
+              </Label>
+              <Textarea
+                id="description"
+                placeholder="Deskripsi singkat cabang..."
+                rows={2}
+                {...register("description")}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address">
+                Alamat{" "}
+                <span className="text-muted-foreground text-xs">(opsional)</span>
+              </Label>
+              <Textarea
+                id="address"
+                placeholder="Alamat lengkap cabang..."
+                rows={2}
+                {...register("address")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <p className="text-sm font-medium">Cabang aktif</p>
+                <p className="text-muted-foreground text-xs">
+                  Cabang nonaktif tidak muncul di pilihan meja.
+                </p>
+              </div>
+              <Switch
+                checked={isActive}
+                onCheckedChange={(checked) => setValue("isActive", checked)}
+              />
+            </div>
+
+            {!editData ? (
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-semibold">Akun kasir</p>
+                    <p className="text-muted-foreground text-xs">
+                      Akun langsung terdaftar. Password dibuat otomatis dan
+                      ditampilkan setelah cabang disimpan.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cashierName">Nama kasir</Label>
+                    <Input
+                      id="cashierName"
+                      placeholder="Nama kasir"
+                      {...register("cashierName")}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cashierEmail">Email login</Label>
+                    <Input
+                      id="cashierEmail"
+                      type="email"
+                      autoComplete="off"
+                      placeholder="kasir@email.com"
+                      {...register("cashierEmail")}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                disabled={createBranch.isPending || updateBranch.isPending}
+              >
+                {createBranch.isPending || updateBranch.isPending
+                  ? "Menyimpan..."
+                  : editData
+                    ? "Perbarui"
+                    : "Simpan"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(credentials)}
+        onOpenChange={() => setCredentials(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Akses kasir {credentials?.branchName ?? ""}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-muted-foreground text-sm">
+              Simpan sekarang. Password hanya ditampilkan sekali.
+            </p>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <div className="flex items-center gap-2">
+                <Input readOnly value={credentials?.email ?? ""} />
+                <CopyButton value={credentials?.email ?? ""} label="" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Password</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  readOnly
+                  value={credentials?.password ?? ""}
+                  className="font-mono"
                 />
-                <Label
-                  htmlFor="isActive"
-                  className="cursor-pointer font-normal"
-                >
-                  {isActive ? "Aktif" : "Tidak Aktif"}
-                </Label>
+                <CopyButton value={credentials?.password ?? ""} label="" />
               </div>
             </div>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              Nama Branch <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="name"
-              placeholder={`Contoh: SMA IT ${process.env.NEXT_PUBLIC_CLIENT_NAME?.toUpperCase()}`}
-              {...register("name")}
-            />
-            {errors.name && (
-              <p className="text-destructive text-sm">{errors.name.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">
-              Deskripsi{" "}
-              <span className="text-muted-foreground text-xs">(opsional)</span>
-            </Label>
-            <Textarea
-              id="description"
-              placeholder="Deskripsi singkat tentang Branch..."
-              rows={2}
-              {...register("description")}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="address">
-              Alamat{" "}
-              <span className="text-muted-foreground text-xs">(opsional)</span>
-            </Label>
-            <Textarea
-              id="address"
-              placeholder="Alamat lengkap Branch..."
-              rows={2}
-              {...register("address")}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">
-                No. Telepon{" "}
-                <span className="text-muted-foreground text-xs">
-                  (opsional)
-                </span>
-              </Label>
-              <Input
-                id="phone"
-                placeholder="(021) 77833598"
-                {...register("phone")}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="adminName">
-                Bendahara{" "}
-                <span className="text-muted-foreground text-xs">
-                  (opsional)
-                </span>
-              </Label>
-              <Input
-                id="adminName"
-                placeholder="Nama bendahara..."
-                {...register("adminName")}
-              />
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* ── Upload Tanda Tangan ── */}
-          <SignatureUpload
-            currentSignatureUrl={signatureUrl || ""}
-            onUploadSuccess={(url) => setValue("signatureUrl", url)}
-            disabled={createBranch.isPending || updateBranch.isPending}
-          />
-
-          {/* Hidden field untuk menyimpan URL ke form state */}
-          <input type="hidden" {...register("signatureUrl")} />
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Batal
-            </Button>
-            <Button
-              type="submit"
-              disabled={createBranch.isPending || updateBranch.isPending}
-            >
-              {createBranch.isPending || updateBranch.isPending
-                ? "Menyimpan..."
-                : editData
-                  ? "Perbarui"
-                  : "Simpan"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button onClick={() => setCredentials(null)}>Selesai</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -556,24 +382,40 @@ function BranchDetailDialog({
   onOpenChange: (open: boolean) => void;
   branchData: BranchData | null;
 }) {
+  const resetPassword = useResetUserPassword();
+  const [credentials, setCredentials] = useState<{
+    email: string;
+    password: string;
+  } | null>(null);
+
   if (!branchData) return null;
 
+  const cashier = branchData.users?.find(
+    (user) => user.role?.name === "Kasir",
+  );
+
+  const handleReset = async () => {
+    if (!cashier) return;
+    try {
+      const result = await resetPassword.mutateAsync(cashier.id);
+      setCredentials({ email: result.email, password: result.password });
+      toast.success("Password kasir direset. Tampilkan sekarang.");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Detail Branch</DialogTitle>
+          <DialogTitle>Detail Cabang</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-5">
           {/* Header info */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-muted-foreground mb-1 text-xs">
-                Kode Branch
-              </p>
-              <p className="font-mono text-lg font-bold">{branchData.code}</p>
-            </div>
             <div>
               <p className="text-muted-foreground mb-1 text-xs">
                 Status
@@ -589,7 +431,7 @@ function BranchDetailDialog({
 
           <div>
             <p className="text-muted-foreground mb-1 text-xs">
-              Nama Branch
+              Nama Cabang
             </p>
             <p className="text-base font-semibold">{branchData.name}</p>
           </div>
@@ -612,41 +454,39 @@ function BranchDetailDialog({
                 <p className="text-sm">{branchData.address}</p>
               </div>
             )}
-            {branchData.phone && (
-              <div>
-                <p className="text-muted-foreground mb-1 text-xs">
-                  Telepon
-                </p>
-                <p className="text-sm">{branchData.phone}</p>
-              </div>
-            )}
-            {branchData.adminName && (
-              <div>
-                <p className="text-muted-foreground mb-1 text-xs">
-                  Bendahara
-                </p>
-                <p className="text-sm font-medium">{branchData.adminName}</p>
-              </div>
-            )}
           </div>
 
-          {/* Tanda tangan preview */}
-          {branchData.signatureUrl && (
-            <div>
-              <p className="text-muted-foreground mb-2 text-xs">
-                Tanda Tangan Bendahara
-              </p>
-              <div className="bg-muted/50 inline-flex rounded-lg border p-3">
-                <Image
-                  src={branchData.signatureUrl}
-                  alt="Tanda tangan bendahara"
-                  width={200}
-                  height={80}
-                  className="max-h-20 object-contain"
-                />
+          <Separator />
+
+          <div className="rounded-lg border p-3">
+            <p className="text-muted-foreground mb-2 text-xs">Akun kasir</p>
+            {cashier ? (
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold">{cashier.name}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {cashier.email}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={resetPassword.isPending}
+                  onClick={() => void handleReset()}
+                >
+                  <KeyRound className="mr-2 h-4 w-4" />
+                  {resetPassword.isPending
+                    ? "Mereset..."
+                    : "Reset password"}
+                </Button>
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                Belum ada akun kasir di cabang ini.
+              </p>
+            )}
+          </div>
 
           <Separator />
 
@@ -684,7 +524,46 @@ function BranchDetailDialog({
           <Button onClick={() => onOpenChange(false)}>Tutup</Button>
         </div>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(credentials)}
+        onOpenChange={() => setCredentials(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Password kasir baru</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-muted-foreground text-sm">
+              Simpan sekarang. Password hanya ditampilkan sekali; admin bisa
+              reset lagi kapan saja lewat detail cabang.
+            </p>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <div className="flex items-center gap-2">
+                <Input readOnly value={credentials?.email ?? ""} />
+                <CopyButton value={credentials?.email ?? ""} label="" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Password</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  readOnly
+                  value={credentials?.password ?? ""}
+                  className="font-mono"
+                />
+                <CopyButton value={credentials?.password ?? ""} label="" />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setCredentials(null)}>Selesai</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -720,7 +599,7 @@ function DeleteBranchDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Hapus Branch</AlertDialogTitle>
+          <AlertDialogTitle>Hapus Cabang</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div>
               {hasRelatedData ? (
@@ -799,29 +678,13 @@ function BranchDataTable() {
       enableHiding: false,
     },
     {
-      accessorKey: "code",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Kode <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <div className="font-mono text-sm font-medium">
-          {row.getValue("code")}
-        </div>
-      ),
-    },
-    {
       accessorKey: "name",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Nama Branch <ArrowUpDown className="ml-2 h-4 w-4" />
+          Nama Cabang <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => (
@@ -847,44 +710,18 @@ function BranchDataTable() {
       ),
     },
     {
-      accessorKey: "phone",
-      header: "Telepon",
-      cell: ({ row }) => (
-        <div className="text-muted-foreground text-sm">
-          {(row.getValue("phone") as string) || "-"}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "adminName",
-      header: "Bendahara",
-      cell: ({ row }) => (
-        <div className="text-muted-foreground text-sm">
-          {(row.getValue("adminName") as string) || "-"}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "signatureUrl",
-      header: "Tanda Tangan",
+      id: "cashier",
+      header: "Kasir",
       cell: ({ row }) => {
-        const url = row.getValue("signatureUrl") as string;
-        if (!url) {
-          return (
-            <span className="text-muted-foreground text-xs italic">
-              Belum ada
-            </span>
-          );
-        }
+        const cashier = row.original.users?.find(
+          (user) => user.role?.name === "Kasir",
+        );
         return (
-          <div className="bg-muted/50 flex h-8 w-16 items-center justify-center overflow-hidden rounded-lg border">
-            <Image
-              src={url}
-              alt="Tanda tangan"
-              width={64}
-              height={32}
-              className="h-full w-full object-contain"
-            />
+          <div className="text-xs">
+            <div className="font-medium">{cashier?.name ?? "-"}</div>
+            <div className="text-muted-foreground">
+              {cashier?.email ?? "Belum ada kasir"}
+            </div>
           </div>
         );
       },
@@ -996,58 +833,60 @@ function BranchDataTable() {
   if (isLoading) return <Loading />;
 
   return (
-    <div className="">
-      <div className="text-3xl font-semibold tracking-tight">Branch</div>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-[22px] font-extrabold tracking-[-0.6px] text-[#16181D]">
+            Cabang
+          </h1>
+          <p className="text-[13px] font-medium text-[#5D6370]">
+            Kelola cabang, alamat, telepon, dan penanggung jawab.
+          </p>
+        </div>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Tambah Cabang
+        </Button>
+      </div>
 
-      <div className="flex items-center justify-between py-4">
-        <div className="relative">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="relative w-full max-w-sm">
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
-            placeholder="Cari nama atau kode Branch..."
+            placeholder="Cari nama atau kode cabang..."
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(e) =>
               table.getColumn("name")?.setFilterValue(e.target.value)
             }
-            className="max-w-sm pl-10"
+            className="w-full pl-10"
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                Kolom <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((c) => c.getCanHide())
-                .map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button
-            onClick={() => setCreateDialogOpen(true)}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Tambah Branch
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              Kolom <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table
+              .getAllColumns()
+              .filter((c) => c.getCanHide())
+              .map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                >
+                  {column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <div className="rounded-3xl border border-border bg-card">
+      <div className="overflow-x-auto rounded-xl border border-[#E3E5E9] bg-white">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
@@ -1088,7 +927,7 @@ function BranchDataTable() {
                   colSpan={columns.length}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Tidak ada data Branch.
+                  Belum ada cabang.
                 </TableCell>
               </TableRow>
             )}

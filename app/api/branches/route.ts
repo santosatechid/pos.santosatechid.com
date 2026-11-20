@@ -1,6 +1,17 @@
+import { randomBytes } from "node:crypto";
+
 import { handlePrismaError } from "@/services/errorHandler";
 import { prisma } from "@/services/prisma";
-import { resolveClient, clientForbidden } from "@/services/clients";
+import {
+  resolveClient,
+  clientForbidden,
+  ensureClientRoles,
+} from "@/services/clients";
+import {
+  createTenantUser,
+  requireAdmin,
+  userAdminErrorResponse,
+} from "@/services/users";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -15,6 +26,15 @@ export async function GET(request: NextRequest) {
       where: { clientId: t.clientId },
       include: {
         _count: { select: { users: true } },
+        users: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: { select: { name: true } },
+          },
+          orderBy: { createdAt: "asc" },
+        },
       },
       orderBy: { name: "asc" },
     });
@@ -29,19 +49,27 @@ export async function POST(request: NextRequest) {
   if (!t.ok) return t.response;
 
   try {
-    const { code, name, description, address, phone, adminName, signatureUrl, isActive } =
-      await request.json();
+    await requireAdmin(request.headers);
+    const {
+      name,
+      description,
+      address,
+      phone,
+      adminName,
+      signatureUrl,
+      isActive,
+      cashier,
+    } = await request.json();
 
-    if (!code || !name) {
+    if (!name) {
       return NextResponse.json(
-        { error: "Code and name are required" },
+        { error: "Nama cabang wajib diisi" },
         { status: 400 },
       );
     }
 
     const branch = await prisma.branch.create({
       data: {
-        code,
         name,
         description,
         address,
@@ -53,9 +81,51 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(branch, { status: 201 });
+    let credentials: { email: string; password: string } | null = null;
+    if (cashier?.name && cashier?.email) {
+      await ensureClientRoles(t.clientId);
+      const role = await prisma.role.findFirst({
+        where: { clientId: t.clientId, name: "Kasir" },
+        select: { id: true },
+      });
+      if (!role) {
+        await prisma.branch.delete({ where: { id: branch.id } });
+        return NextResponse.json(
+          { error: "Role Kasir tidak ditemukan" },
+          { status: 500 },
+        );
+      }
+
+      const password =
+        typeof cashier.password === "string" && cashier.password.length >= 8
+          ? cashier.password
+          : randomBytes(12).toString("base64url");
+
+      try {
+        await createTenantUser(t.clientId, request.headers, {
+          name: cashier.name,
+          email: cashier.email,
+          password,
+          roleId: role.id,
+          branchId: branch.id,
+          status: "active",
+          isActive: true,
+        });
+        credentials = { email: String(cashier.email), password };
+      } catch (error) {
+        await prisma.branch.delete({ where: { id: branch.id } }).catch(() => {
+          // Cabang tanpa kasir lebih baik dihapus, error asli tetap dilempar.
+        });
+        return userAdminErrorResponse(error);
+      }
+    }
+
+    return NextResponse.json(
+      { ...branch, cashier: credentials },
+      { status: 201 },
+    );
   } catch (error) {
-    return handlePrismaError(error);
+    return userAdminErrorResponse(error);
   }
 }
 
@@ -64,12 +134,12 @@ export async function PUT(request: NextRequest) {
   if (!t.ok) return t.response;
 
   try {
-    const { id, code, name, description, address, phone, adminName, signatureUrl, isActive } =
+    const { id, name, description, address, phone, adminName, signatureUrl, isActive } =
       await request.json();
 
-    if (!id || !code || !name) {
+    if (!id || !name) {
       return NextResponse.json(
-        { error: "ID, code, and name are required" },
+        { error: "ID and name are required" },
         { status: 400 },
       );
     }
@@ -84,7 +154,7 @@ export async function PUT(request: NextRequest) {
 
     const branch = await prisma.branch.update({
       where: { id },
-      data: { code, name, description, address, phone, adminName, signatureUrl, isActive },
+      data: { name, description, address, phone, adminName, signatureUrl, isActive },
     });
 
     return NextResponse.json(branch);

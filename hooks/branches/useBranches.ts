@@ -6,7 +6,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export type BranchRecord = {
   id: string;
-  code: string;
   name: string;
   description?: string | null;
   isActive: boolean;
@@ -17,12 +16,18 @@ export type BranchRecord = {
   clientId?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  users?: {
+    id: string;
+    name: string;
+    email: string | null;
+    role: { name: string } | null;
+  }[];
+  cashier?: { email: string; password: string } | null;
   _count?: { users: number };
 };
 
 export type BranchInput = {
   id?: string;
-  code: string;
   name: string;
   description?: string;
   address?: string;
@@ -30,6 +35,11 @@ export type BranchInput = {
   adminName?: string;
   signatureUrl?: string;
   isActive: boolean;
+  cashier?: {
+    name: string;
+    email: string;
+    password?: string;
+  };
 };
 
 export const useGetBranchs = () => {
@@ -47,11 +57,12 @@ export const useCreateBranch = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: BranchInput) => {
-      const res = await apiPost("/api/branches", data);
+      const res = await apiPost<BranchRecord>("/api/branches", data);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["branchs"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 };
