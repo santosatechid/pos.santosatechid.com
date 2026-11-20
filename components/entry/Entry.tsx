@@ -21,7 +21,7 @@ export function EntryScreen({
   children: ReactNode;
 }) {
   return (
-    <div className="bg-background flex min-h-[100dvh] flex-col md:flex-row">
+    <div className="landing-theme bg-background flex min-h-[100dvh] flex-col md:flex-row">
       <section className="flex flex-1 items-center justify-center px-6 py-10 sm:px-8 sm:py-14">
         <div className="w-full max-w-md">
           <Link

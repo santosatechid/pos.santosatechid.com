@@ -17,7 +17,7 @@ export const useGetUsers = () => {
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Partial<UserDataTypes>) => {
+    mutationFn: async (data: Partial<UserDataTypes> & { password?: string }) => {
       const res = await apiPost("/api/users", data);
       return res.data;
     },
@@ -30,12 +30,27 @@ export const useCreateUser = () => {
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Partial<UserDataTypes> & { id: string }) => {
+    mutationFn: async (
+      data: Partial<UserDataTypes> & { id: string; password?: string },
+    ) => {
       const res = await apiPut("/api/users", data);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+};
+
+export const useResetUserPassword = () => {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiPost<{
+        name: string;
+        email: string;
+        password: string;
+      }>(`/api/users/${id}/password`);
+      return res.data;
     },
   });
 };

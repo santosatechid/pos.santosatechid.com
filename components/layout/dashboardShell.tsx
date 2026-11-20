@@ -1,30 +1,35 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
-import { AppSidebar } from "@/components/layout/appSidebar";
-import Footer from "@/components/layout/footer";
+import { jakarta } from "@/components/landing/font";
 import InstallButton from "@/components/layout/installButton";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import PosDock from "@/components/pos/PosDock";
 
 export default function DashboardShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const isPos = pathname === "/dashboard";
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("landing-theme");
+    return () => root.classList.remove("landing-theme");
+  }, []);
+
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset className="bg-background flex min-h-screen flex-col">
-        <header className="bg-background/95 supports-backdrop-filter:bg-background/60 border-border sticky flex shrink-0 items-center gap-2 border-b px-4 py-7 backdrop-blur md:px-6">
-          <SidebarTrigger />
-        </header>
-        <main className="flex-1 overflow-auto">
-          <div className="mx-auto space-y-6 p-4 md:p-6 lg:p-8">{children}</div>
+    <div className="bg-background min-h-[100dvh] pb-[calc(62px+env(safe-area-inset-bottom))]">
+      {isPos ? (
+        children
+      ) : (
+        <main
+          className={`${jakarta.className} mx-auto w-full max-w-8xl p-4 md:p-6 lg:p-8`}
+        >
+          {children}
         </main>
-        <Footer />
-        <InstallButton />
-      </SidebarInset>
-    </SidebarProvider>
+      )}
+      <InstallButton />
+      <PosDock />
+    </div>
   );
 }

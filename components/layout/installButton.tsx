@@ -61,7 +61,7 @@ export default function InstallButton() {
   return (
     <Button
       onClick={handleInstallClick}
-      className="bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary-hover active:bg-primary-active fixed right-6 bottom-6 z-50 rounded-full px-5 py-3 text-sm font-semibold shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+      className="bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary-hover active:bg-primary-active fixed right-6 bottom-[calc(78px+env(safe-area-inset-bottom))] z-50 rounded-full px-5 py-3 text-sm font-semibold shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
     >
       <Download className="h-4 w-4" />
       <span>Pasang Aplikasi</span>
