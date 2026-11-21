@@ -26,6 +26,23 @@ export type BranchRecord = {
   _count?: { users: number };
 };
 
+/**
+ * Cabang utama = cabang pertama yang dibuat saat onboarding. Dipakai untuk
+ * membatasi akses tab Cabang.
+ */
+export function findMainBranch<
+  T extends { name: string; createdAt?: string | null },
+>(branches: T[]): T | null {
+  if (branches.length === 0) return null;
+  return [...branches].sort((a, b) => {
+    const left = a.createdAt ? Date.parse(a.createdAt) : Number.MAX_SAFE_INTEGER;
+    const right = b.createdAt
+      ? Date.parse(b.createdAt)
+      : Number.MAX_SAFE_INTEGER;
+    return left - right;
+  })[0];
+}
+
 export type BranchInput = {
   id?: string;
   name: string;

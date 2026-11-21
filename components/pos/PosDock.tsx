@@ -23,7 +23,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alertDialog";
-import { signOut } from "@/services/auth/authClients";
+import {
+  findMainBranch,
+  useGetBranchs,
+} from "@/hooks/branches/useBranches";
+import { useGetUserByIdBetterAuth } from "@/hooks/users/useUsersByIdBetterAuth";
+import { signOut, useSession } from "@/services/auth/authClients";
 
 const ITEMS = [
   { href: "/dashboard", label: "Kasir", icon: House },
@@ -70,6 +75,27 @@ export default function PosDock() {
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { data: session } = useSession();
+  const { data: userData } = useGetUserByIdBetterAuth(
+    session?.user?.id ?? "",
+  );
+  const { data: branches = [] } = useGetBranchs();
+
+  const mainBranch = findMainBranch(branches);
+  const canManageBranches =
+    userData?.role?.name === "Admin" &&
+    Boolean(
+      userData?.branchId &&
+        mainBranch &&
+        userData.branchId === mainBranch.id,
+    );
+
+  const items = ITEMS.filter(
+    (item) =>
+      item.href !== "/dashboard/admin/master/branches" || canManageBranches,
+  );
+  const columnClass =
+    items.length === ITEMS.length ? "grid-cols-8" : "grid-cols-7";
 
   const handleLogout = async () => {
     setLoading(true);
@@ -85,7 +111,9 @@ export default function PosDock() {
   return (
     <>
       <nav className="pb-[env(safe-area-inset-bottom)] fixed inset-x-0 bottom-0 z-40 border-t border-[#E3E5E9] bg-white/95 backdrop-blur">
-        <div className="mx-auto grid h-[62px] max-w-[820px] grid-cols-8">
+        <div
+          className={`mx-auto grid h-[62px] max-w-[820px] ${columnClass}`}
+        >
           <button
             type="button"
             onClick={() => setConfirmOpen(true)}
@@ -94,7 +122,7 @@ export default function PosDock() {
             <LogOut className="h-[19px] w-[19px]" strokeWidth={1.8} />
             Keluar
           </button>
-          {ITEMS.map(({ href, label, icon: Icon }) => {
+          {items.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
               <Link key={href} href={href} className={itemClass(active)}>

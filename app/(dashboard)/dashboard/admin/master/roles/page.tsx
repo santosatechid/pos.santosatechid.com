@@ -26,6 +26,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -207,11 +209,14 @@ function RoleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {editData ? "Edit Role" : "Tambah Role Baru"}
           </DialogTitle>
+          <DialogDescription>
+            Atur nama role dan izin halaman yang boleh diakses penggunanya.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -273,7 +278,7 @@ function RoleFormDialog({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <DialogFooter className="sticky bottom-0 -mx-5 -mb-5 border-t bg-popover px-5 py-4 sm:-mx-6 sm:-mb-6 sm:px-6">
             <Button
               type="button"
               variant="outline"
@@ -291,7 +296,7 @@ function RoleFormDialog({
                   ? "Perbarui"
                   : "Simpan"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

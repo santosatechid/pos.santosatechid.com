@@ -6,7 +6,7 @@ import QrImage from "@/components/qris/QrImage";
 import QrisDialogContent from "@/components/qris/QrisDialogContent";
 import { formatDateTime, formatRupiah } from "@/components/qris/qr";
 import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -284,6 +284,7 @@ export default function PosTerminal() {
   const [note, setNote] = useState("");
   const [showCart, setShowCart] = useState(false);
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
+  const [showQrisPicker, setShowQrisPicker] = useState(false);
   const [payment, setPayment] = useState<PosOrderResult | null>(null);
   const qrisStatus = useGetQrisTransaction(
     payment?.qrisTransactionId ?? null,
@@ -292,7 +293,11 @@ export default function PosTerminal() {
   const { data: stats } = useGetOrderStats(currentUser?.branch?.id ?? "all");
   const balances = stats?.balances ?? { cash: 0, transfer: 0, qris: 0 };
 
-  const qrisReady = accounts.some((account) => account.isActive);
+  const activeQrisAccounts = useMemo(
+    () => accounts.filter((account) => account.isActive),
+    [accounts],
+  );
+  const qrisReady = activeQrisAccounts.length > 0;
   const activeTables = tables.filter((table) => table.isActive);
 
   const categories = useMemo(
@@ -413,7 +418,10 @@ export default function PosTerminal() {
     setShowPaymentMethods(true);
   };
 
-  const payWith = async (method: "qris" | "cash" | "transfer") => {
+  const payWith = async (
+    method: "qris" | "cash" | "transfer",
+    accountId?: string,
+  ) => {
     if (method === "qris" && !qrisReady) {
       toast.error("QRIS belum aktif.");
       return;
@@ -443,6 +451,7 @@ export default function PosTerminal() {
       const result = await createOrder.mutateAsync({
         orderType,
         paymentMethod: method,
+        accountId: method === "qris" ? accountId ?? null : null,
         tableId: orderType === "dine-in" ? tableId || null : null,
         customerName: customerName.trim() || null,
         note: note.trim() || null,
@@ -483,6 +492,20 @@ export default function PosTerminal() {
         error instanceof Error ? error.message : "Gagal membuat pesanan",
       );
     }
+  };
+
+  const handleQrisPay = () => {
+    if (activeQrisAccounts.length === 0) {
+      toast.error("QRIS belum aktif.");
+      return;
+    }
+    if (activeQrisAccounts.length === 1) {
+      setShowPaymentMethods(false);
+      void payWith("qris", activeQrisAccounts[0].id);
+      return;
+    }
+    setShowPaymentMethods(false);
+    setShowQrisPicker(true);
   };
 
   const paymentStatus = qrisStatus.data?.status ?? "pending";
@@ -752,7 +775,74 @@ export default function PosTerminal() {
 
       <Dialog open={showCart} onOpenChange={setShowCart}>
         <QrisDialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-md">
+          <DialogTitle className="sr-only">Keranjang pesanan</DialogTitle>
+          <DialogDescription className="sr-only">
+            Ringkasan item dan total sebelum pembayaran.
+          </DialogDescription>
           <OrderPanel {...panelProps} />
+        </QrisDialogContent>
+      </Dialog>
+
+      <Dialog open={showQrisPicker} onOpenChange={setShowQrisPicker}>
+        <QrisDialogContent className="sm:max-w-md">
+          <DialogTitle className="sr-only">Pilih akun QRIS</DialogTitle>
+          <DialogDescription className="sr-only">
+            Pilih akun QRIS yang dipakai untuk pembayaran ini.
+          </DialogDescription>
+          <div className="space-y-4">
+            <div>
+              <p className="text-[10px] font-extrabold tracking-[0.5px] text-[#C81E28]">
+                PILIH QRIS
+              </p>
+              <p className="text-[18px] font-extrabold tracking-[-0.4px] text-[#16181D]">
+                Akun mana yang dipakai?
+              </p>
+              <p className="mt-1 text-[11.5px] font-medium text-[#5D6370]">
+                Total {formatRupiah(total)}. QR yang tampil mengikuti akun yang
+                dipilih.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {activeQrisAccounts.map((account) => (
+                <button
+                  key={account.id}
+                  type="button"
+                  disabled={createOrder.isPending}
+                  onClick={() => {
+                    setShowQrisPicker(false);
+                    void payWith("qris", account.id);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-[14px] border border-[#E3E5E9] bg-white p-3 text-left transition-colors hover:border-[#C81E28] hover:bg-[#FDECEC] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[10px] bg-[#FDECEC] text-[#C81E28]">
+                    <QrCode className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13px] font-extrabold text-[#16181D]">
+                      {account.label}
+                    </span>
+                    <span className="block truncate text-[11px] font-medium text-[#5D6370]">
+                      {account.merchantName} · {account.merchantCity}
+                    </span>
+                  </span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-[#7C8290]" />
+                </button>
+              ))}
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowQrisPicker(false);
+                setShowPaymentMethods(true);
+              }}
+              className="h-11 w-full rounded-[10px] text-[13px] font-bold"
+            >
+              Kembali
+            </Button>
+          </div>
         </QrisDialogContent>
       </Dialog>
 
@@ -761,6 +851,10 @@ export default function PosTerminal() {
         onOpenChange={setShowPaymentMethods}
       >
         <QrisDialogContent className="sm:max-w-md" showCloseButton={false}>
+          <DialogTitle className="sr-only">Pilih pembayaran</DialogTitle>
+          <DialogDescription className="sr-only">
+            Pilih metode pembayaran QRIS, transfer, atau cash.
+          </DialogDescription>
           <div className="space-y-4">
             <div>
               <p className="text-[10px] font-extrabold tracking-[0.5px] text-[#C81E28]">
@@ -774,7 +868,7 @@ export default function PosTerminal() {
             <button
               type="button"
               disabled={!qrisReady || createOrder.isPending}
-              onClick={() => void payWith("qris")}
+              onClick={handleQrisPay}
               className="flex w-full items-center gap-3 rounded-[14px] border border-[#E3E5E9] bg-white p-3 text-left transition-colors hover:border-[#C81E28] hover:bg-[#FDECEC] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span className="grid h-11 w-11 place-items-center rounded-[10px] bg-[#FDECEC] text-[#C81E28]">
@@ -786,7 +880,9 @@ export default function PosTerminal() {
                 </span>
                 <span className="block text-[11px] font-medium text-[#5D6370]">
                   {qrisReady
-                    ? "Buat QR dinamis, konfirmasi setelah dana masuk."
+                    ? activeQrisAccounts.length > 1
+                      ? `${activeQrisAccounts.length} akun aktif, pilih QRIS dulu.`
+                      : "Buat QR dinamis, konfirmasi setelah dana masuk."
                     : "QRIS belum aktif."}
                 </span>
               </span>
@@ -843,6 +939,10 @@ export default function PosTerminal() {
         }}
       >
         <QrisDialogContent className="sm:max-w-md" showCloseButton={false}>
+        <DialogTitle className="sr-only">Pembayaran QRIS</DialogTitle>
+        <DialogDescription className="sr-only">
+          QR dinamis, total, status, dan konfirmasi pembayaran.
+        </DialogDescription>
         {payment ? (
           <div className="space-y-4">
             <div className="flex items-start justify-between">

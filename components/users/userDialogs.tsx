@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -160,11 +162,15 @@ export function UserFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {editData ? "Edit User" : "Tambah User & Akun Login"}
           </DialogTitle>
+          <DialogDescription>
+            Akun login dibuat langsung dari sini. Password bisa diisi atau
+            diganti nanti.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -296,7 +302,7 @@ export function UserFormDialog({
             Aktif
           </label>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <DialogFooter className="sticky bottom-0 -mx-5 -mb-5 border-t bg-popover px-5 py-4 sm:-mx-6 sm:-mb-6 sm:px-6">
             <Button
               type="button"
               variant="outline"
@@ -307,7 +313,7 @@ export function UserFormDialog({
             <Button type="submit" disabled={isSaving}>
               {isSaving ? "Menyimpan..." : "Simpan"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

@@ -93,6 +93,7 @@ export type OrderType = "dine-in" | "takeaway" | "delivery";
 export type PosOrderInput = {
   orderType: OrderType;
   paymentMethod: "qris" | "cash" | "transfer";
+  accountId?: string | null;
   tableId?: string | null;
   customerName?: string | null;
   note?: string | null;

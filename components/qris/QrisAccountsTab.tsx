@@ -237,7 +237,7 @@ export default function QrisAccountsTab() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <QrisDialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <QrisDialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {editing ? "Ubah akun QRIS" : "Tambah akun QRIS"}
@@ -365,7 +365,7 @@ export default function QrisAccountsTab() {
             ) : null}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 -mx-5 -mb-5 border-t bg-popover px-5 py-4 sm:-mx-6 sm:-mb-6 sm:px-6">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Batal
             </Button>

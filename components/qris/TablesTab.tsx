@@ -227,6 +227,9 @@ export default function TablesTab() {
             <DialogTitle>
               {editing ? "Ubah meja" : "Tambah meja"}
             </DialogTitle>
+            <DialogDescription>
+              Kode meja dipakai di QR permanen dan struk pesanan.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -315,7 +318,7 @@ export default function TablesTab() {
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 -mx-5 -mb-5 border-t bg-popover px-5 py-4 sm:-mx-6 sm:-mb-6 sm:px-6">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Batal
             </Button>
@@ -364,10 +367,10 @@ export default function TablesTab() {
         <QrisDialogContent>
           <DialogHeader>
             <DialogTitle>Hapus meja?</DialogTitle>
+            <DialogDescription>
+              QR meja berhenti berfungsi. Riwayat pesanan tetap tersimpan.
+            </DialogDescription>
           </DialogHeader>
-          <p className="text-[13px] font-medium text-[#5D6370]">
-            QR meja berhenti berfungsi. Riwayat pesanan tetap tersimpan.
-          </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
               Batal

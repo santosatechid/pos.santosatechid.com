@@ -6,6 +6,7 @@ import {
   resolveClient,
   clientForbidden,
   ensureClientRoles,
+  isMainBranchAccount,
 } from "@/services/clients";
 import {
   createTenantUser,
@@ -50,6 +51,9 @@ export async function POST(request: NextRequest) {
 
   try {
     await requireAdmin(request.headers);
+    if (!(await isMainBranchAccount(t.clientId, t.userId))) {
+      return clientForbidden("Hanya akun cabang utama yang bisa mengelola cabang");
+    }
     const {
       name,
       description,
@@ -168,9 +172,26 @@ export async function DELETE(request: NextRequest) {
   if (!t.ok) return t.response;
 
   try {
+    await requireAdmin(request.headers);
+    if (!(await isMainBranchAccount(t.clientId, t.userId))) {
+      return clientForbidden("Hanya akun cabang utama yang bisa mengelola cabang");
+    }
+
     const { id } = await request.json();
     if (!id) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
+    }
+
+    const mainBranch = await prisma.branch.findFirst({
+      where: { clientId: t.clientId },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+    if (mainBranch?.id === id) {
+      return NextResponse.json(
+        { error: "Cabang utama tidak bisa dihapus" },
+        { status: 400 },
+      );
     }
 
     const owned = await prisma.branch.findFirst({
@@ -184,6 +205,6 @@ export async function DELETE(request: NextRequest) {
     const branch = await prisma.branch.delete({ where: { id } });
     return NextResponse.json(branch);
   } catch (error) {
-    return handlePrismaError(error);
+    return userAdminErrorResponse(error);
   }
 }

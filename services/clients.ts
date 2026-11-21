@@ -79,6 +79,31 @@ export function clientForbidden(message = "Akun belum terhubung ke client") {
 }
 
 /**
+ * Cabang utama = cabang pertama yang dibuat saat onboarding. Hanya akun yang
+ * ditempatkan di cabang ini yang boleh mengelola daftar cabang.
+ */
+export async function isMainBranchAccount(
+  clientId: string,
+  userId: string,
+): Promise<boolean> {
+  const [userData, mainBranch] = await Promise.all([
+    prisma.userData.findFirst({
+      where: { userId, clientId },
+      select: { branchId: true },
+    }),
+    prisma.branch.findFirst({
+      where: { clientId },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    }),
+  ]);
+
+  return Boolean(
+    userData?.branchId && mainBranch && userData.branchId === mainBranch.id,
+  );
+}
+
+/**
  * Client milik pemanggil. User yang belum onboarding tidak punya clientId,
  * sehingga route bisnis membalas 403 dan UI mengarahkan ke /onboarding.
  */

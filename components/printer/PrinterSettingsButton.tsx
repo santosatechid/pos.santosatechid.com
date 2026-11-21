@@ -12,7 +12,7 @@ import {
 import { toast } from "sonner";
 
 import QrisDialogContent from "@/components/qris/QrisDialogContent";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { useGetClient } from "@/hooks/clients/useClients";
 import { useReceiptPrinter } from "@/hooks/printer/useReceiptPrinter";
@@ -112,6 +112,10 @@ export default function PrinterSettingsButton() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <QrisDialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-md">
+          <DialogTitle className="sr-only">Pengaturan printer struk</DialogTitle>
+          <DialogDescription className="sr-only">
+            Hubungkan printer Bluetooth 58mm, atur cetak otomatis, dan tes cetak.
+          </DialogDescription>
           <div className="space-y-4">
             <div>
               <p className="text-[10px] font-extrabold tracking-[0.5px] text-[#C81E28]">

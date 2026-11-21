@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 
 import {
   type BranchRecord,
+  findMainBranch,
   useCreateBranch,
   useDeleteBranch,
   useGetBranchs,
@@ -29,6 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -236,11 +238,14 @@ function BranchFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>
               {editData ? "Edit Cabang" : "Tambah Cabang"}
             </DialogTitle>
+            <DialogDescription>
+              Isi profil cabang. Akun kasir otomatis dibuat saat tambah cabang.
+            </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -366,7 +371,7 @@ function BranchFormDialog({
               </>
             ) : null}
 
-            <div className="flex justify-end gap-2 pt-2">
+            <DialogFooter className="sticky bottom-0 -mx-5 -mb-5 border-t bg-popover px-5 py-4 sm:-mx-6 sm:-mb-6 sm:px-6">
               <Button
                 type="button"
                 variant="outline"
@@ -384,7 +389,7 @@ function BranchFormDialog({
                     ? "Perbarui"
                     : "Simpan"}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
@@ -398,6 +403,10 @@ function BranchFormDialog({
             <DialogTitle>
               Akses kasir {credentials?.branchName ?? ""}
             </DialogTitle>
+            <DialogDescription>
+              Simpan email dan password ini sekarang. Password hanya
+              ditampilkan sekali.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-muted-foreground text-sm">
@@ -467,9 +476,12 @@ function BranchDetailDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Detail Cabang</DialogTitle>
+          <DialogDescription>
+            Profil cabang, akun kasir, dan statistik singkat.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5">
@@ -592,6 +604,10 @@ function BranchDetailDialog({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Password kasir baru</DialogTitle>
+            <DialogDescription>
+              Simpan sekarang. Password hanya ditampilkan sekali; admin bisa
+              reset lagi kapan saja lewat detail cabang.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-muted-foreground text-sm">
@@ -1052,10 +1068,17 @@ export default function UserDataTable() {
   const userId = session?.user?.id;
   const { data: userData, isLoading: isLoadingUserData } =
     useGetUserByIdBetterAuth(userId as string);
+  const { data: branchs, isLoading: isLoadingBranches } = useGetBranchs();
   const userRole = userData?.role?.name;
 
-  if (isPending || isLoadingUserData) return <Loading />;
-  if (userRole !== "Admin") {
+  if (isPending || isLoadingUserData || isLoadingBranches) return <Loading />;
+
+  const mainBranch = findMainBranch(branchs ?? []);
+  if (
+    userRole !== "Admin" ||
+    !mainBranch ||
+    userData?.branchId !== mainBranch.id
+  ) {
     unauthorized();
     return null;
   }

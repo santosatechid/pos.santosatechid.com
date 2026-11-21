@@ -5,10 +5,8 @@ services:
       dockerfile: Dockerfile
       args:
         - NODE_ENV=production
-      # PENTING: Tambahkan ini untuk cleanup build cache
       cache_from:
         - ${COMPOSE_PROJECT_NAME}-web:latest
-      # Batasi build context
       labels:
         - "com.docker.compose.project=${COMPOSE_PROJECT_NAME}-web"
 
@@ -32,10 +30,10 @@ services:
       resources:
         limits:
           cpus: "2.0"
-          memory: 2G # Turunkan dari 7G
+          memory: 2G
         reservations:
-          cpus: "2.0"
-          memory: 2G # Turunkan dari 2G
+          cpus: "1.0"
+          memory: 1G
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${PORT}/api/health"]
@@ -47,11 +45,10 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "5m" # Turunkan dari 10m
-        max-file: "2" # Turunkan dari 3
+        max-size: "5m"
+        max-file: "2"
         compress: "true"
 
-    # PENTING: Batasi tmpfs size
     tmpfs:
       - /tmp:size=100m,mode=1777
       - /var/tmp:size=100m,mode=1777
@@ -123,24 +120,6 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    # Cleanup setiap hari jam 2 pagi
     command: sh -c "while true; do docker system prune -af --volumes --filter 'until=24h'; sleep 86400; done"
     profiles:
       - cleanup
-
-networks:
-  ${COMPOSE_PROJECT_NAME}-app-network:
-    driver: bridge
-
-# PENTING: Batasi volume size (jika didukung driver)
-volumes:
-  node_modules:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind,size=500m
-  next_cache:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind,size=300m

@@ -1,26 +1,40 @@
-# pull repository
-git pull
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Hapus image lama
-docker rmi ${COMPOSE_PROJECT_NAME}-web:latest
+cd "$(dirname "$0")"
 
-# Build ulang dengan optimasi
-docker compose --env-file .env.production build --no-cache && docker compose --env-file .env.production up -d
+ENV_FILE=".env.production"
 
-# delete existing cache
-docker system prune -af --volumes
+if [ ! -f "$ENV_FILE" ]; then
+  echo "❌ $ENV_FILE tidak ada. Buat dulu dari .env.example." >&2
+  exit 1
+fi
 
-# Khusus cleanup build cache
-docker builder prune -af
+# Compose butuh variabel ini untuk nama image/container. Shell juga perlu
+# nilai yang sama supaya tidak ada nama image aneh seperti "-web:latest".
+set -a
+# shellcheck disable=SC1090
+. "$ENV_FILE"
+set +a
 
-# Cleanup containerd
-ctr -n moby images prune
+: "${COMPOSE_PROJECT_NAME:?COMPOSE_PROJECT_NAME belum diisi di $ENV_FILE}"
+: "${PORT:?PORT belum diisi di $ENV_FILE}"
 
-# Cek ukuran image
-docker images
+echo "📦 Project: ${COMPOSE_PROJECT_NAME} · port ${PORT}"
 
-# Cek disk usage docker
-docker system df -v
+git pull --ff-only
 
-# Cek ukuran containerd
-du -sh /var/lib/containerd/io.containerd.snapshotter.v1.overlayfs
+echo "🔨 Building images..."
+docker compose --env-file "$ENV_FILE" build
+
+echo "🚀 Starting services..."
+docker compose --env-file "$ENV_FILE" up -d
+
+echo "🧹 Pruning old images and build cache..."
+docker image prune -f --filter "until=24h" || true
+docker builder prune -f --filter "until=48h" || true
+
+echo "📊 Disk usage:"
+docker system df
+
+echo "✅ Deploy selesai."

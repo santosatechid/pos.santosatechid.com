@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -247,6 +248,9 @@ export default function ProductsTab() {
             <DialogTitle>
               {editing ? "Ubah produk" : "Tambah produk"}
             </DialogTitle>
+            <DialogDescription>
+              Nama, harga, foto, dan kategori tampil di kasir serta halaman meja.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -391,7 +395,7 @@ export default function ProductsTab() {
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 -mx-5 -mb-5 border-t bg-popover px-5 py-4 sm:-mx-6 sm:-mb-6 sm:px-6">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Batal
             </Button>
@@ -416,11 +420,11 @@ export default function ProductsTab() {
         <QrisDialogContent>
           <DialogHeader>
             <DialogTitle>Hapus produk?</DialogTitle>
+            <DialogDescription>
+              Produk hilang dari menu. Item pesanan lama tetap menyimpan nama
+              dan harga saat transaksi.
+            </DialogDescription>
           </DialogHeader>
-          <p className="text-[13px] font-medium text-[#5D6370]">
-            Produk hilang dari menu. Item pesanan lama tetap menyimpan nama dan
-            harga saat transaksi.
-          </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
               Batal
