@@ -446,7 +446,193 @@ export async function getOrderStats(
   };
 }
 
+export type SalesReportPoint = OrderStatsPoint;
+
+export type SalesReport = {
+  from: string;
+  to: string;
+  totals: {
+    revenue: number;
+    orders: number;
+    items: number;
+    average: number;
+  };
+  daily: SalesReportPoint[];
+  topProducts: { name: string; qty: number; revenue: number }[];
+  payments: { method: string; label: string; amount: number; orders: number }[];
+  recent: {
+    id: string;
+    createdAt: string;
+    tableCode: string | null;
+    orderType: string;
+    paymentMethod: string;
+    total: number;
+    items: number;
+  }[];
+};
+
+const MAX_REPORT_DAYS = 92;
+
+function parseReportDay(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) throw new QrisError("Tanggal laporan tidak valid", 400);
+  const date = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+  );
+  if (Number.isNaN(date.getTime()) || dayKey(date) !== value) {
+    throw new QrisError("Tanggal laporan tidak valid", 400);
+  }
+  return date;
+}
+
+export async function getSalesReport(
+  clientId: string,
+  options: {
+    from?: string | null;
+    to?: string | null;
+    branchId?: string | null;
+  },
+): Promise<SalesReport> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const from = parseReportDay(options.from) ?? today;
+  const to = parseReportDay(options.to) ?? from;
+
+  if (to.getTime() < from.getTime()) {
+    throw new QrisError("Tanggal akhir harus setelah tanggal mulai", 400);
+  }
+
+  const days = Math.round((to.getTime() - from.getTime()) / 86_400_000) + 1;
+  if (days > MAX_REPORT_DAYS) {
+    throw new QrisError(
+      `Rentang laporan maksimal ${MAX_REPORT_DAYS} hari`,
+      400,
+    );
+  }
+
+  const end = new Date(to);
+  end.setDate(end.getDate() + 1);
+
+  const orders = await prisma.order.findMany({
+    where: {
+      clientId,
+      status: "paid",
+      createdAt: { gte: from, lt: end },
+      ...(options.branchId ? { branchId: options.branchId } : {}),
+    },
+    select: {
+      id: true,
+      createdAt: true,
+      total: true,
+      orderType: true,
+      paymentMethod: true,
+      table: { select: { code: true } },
+      items: { select: { productName: true, unitPrice: true, qty: true } },
+    },
+  });
+
+  const dailyMap = new Map<string, SalesReportPoint>();
+  const productMap = new Map<string, { qty: number; revenue: number }>();
+  const payments = new Map<string, { amount: number; orders: number }>();
+  let revenue = 0;
+  let items = 0;
+
+  for (const order of orders) {
+    revenue += order.total;
+
+    const key = dayKey(order.createdAt);
+    const daily = dailyMap.get(key) ?? {
+      key,
+      label: dayLabel(order.createdAt),
+      orders: 0,
+      revenue: 0,
+    };
+    daily.orders += 1;
+    daily.revenue += order.total;
+    dailyMap.set(key, daily);
+
+    const payment = payments.get(order.paymentMethod) ?? {
+      amount: 0,
+      orders: 0,
+    };
+    payment.amount += order.total;
+    payment.orders += 1;
+    payments.set(order.paymentMethod, payment);
+
+    for (const item of order.items) {
+      items += item.qty;
+      const product = productMap.get(item.productName) ?? {
+        qty: 0,
+        revenue: 0,
+      };
+      product.qty += item.qty;
+      product.revenue += item.unitPrice * item.qty;
+      productMap.set(item.productName, product);
+    }
+  }
+
+  const daily: SalesReportPoint[] = [];
+  for (let index = 0; index < days; index += 1) {
+    const date = new Date(from);
+    date.setDate(date.getDate() + index);
+    const key = dayKey(date);
+    daily.push(
+      dailyMap.get(key) ?? {
+        key,
+        label: dayLabel(date),
+        orders: 0,
+        revenue: 0,
+      },
+    );
+  }
+
+  const paymentLabels: Record<string, string> = {
+    cash: "Cash",
     transfer: "Transfer",
+    qris: "QRIS",
+  };
+
+  return {
+    from: dayKey(from),
+    to: dayKey(to),
+    totals: {
+      revenue,
+      orders: orders.length,
+      items,
+      average: orders.length > 0 ? Math.round(revenue / orders.length) : 0,
+    },
+    daily,
+    topProducts: Array.from(productMap.entries())
+      .map(([name, value]) => ({ name, ...value }))
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 8),
+    payments: Array.from(payments.entries())
+      .map(([method, value]) => ({
+        method,
+        label: paymentLabels[method] ?? method,
+        ...value,
+      }))
+      .sort((a, b) => b.amount - a.amount),
+    recent: orders
+      .slice()
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 10)
+      .map((order) => ({
+        id: order.id,
+        createdAt: order.createdAt.toISOString(),
+        tableCode: order.table?.code ?? null,
+        orderType: order.orderType,
+        paymentMethod: order.paymentMethod,
+        total: order.total,
+        items: order.items.reduce((sum, item) => sum + item.qty, 0),
+      })),
+  };
+}
+
 export async function listOrders(
   clientId: string,
   status?: string | null,
