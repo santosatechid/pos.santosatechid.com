@@ -48,6 +48,11 @@ const ITEMS = [
     icon: QrCode,
   },
   {
+    href: "/dashboard/admin/master/receipt",
+    label: "Struk",
+    icon: ReceiptText,
+  },
+  {
     href: "/dashboard/admin/master/branches",
     label: "Cabang",
     icon: Building2,
@@ -80,7 +85,7 @@ export default function PosDock() {
   return (
     <>
       <nav className="pb-[env(safe-area-inset-bottom)] fixed inset-x-0 bottom-0 z-40 border-t border-[#E3E5E9] bg-white/95 backdrop-blur">
-        <div className="mx-auto grid h-[62px] max-w-[820px] grid-cols-7">
+        <div className="mx-auto grid h-[62px] max-w-[820px] grid-cols-8">
           <button
             type="button"
             onClick={() => setConfirmOpen(true)}

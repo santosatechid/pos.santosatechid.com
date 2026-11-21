@@ -92,7 +92,7 @@ export type OrderType = "dine-in" | "takeaway" | "delivery";
 
 export type PosOrderInput = {
   orderType: OrderType;
-  paymentMethod: "qris" | "cash";
+  paymentMethod: "qris" | "cash" | "transfer";
   tableId?: string | null;
   customerName?: string | null;
   note?: string | null;
@@ -102,7 +102,9 @@ export type PosOrderInput = {
 export type PosOrderResult = {
   orderId: string;
   total: number;
-  paymentMethod: "qris" | "cash";
+  paymentMethod: "qris" | "cash" | "transfer";
+  receiptNumber?: number;
+  receiptCode?: string;
   qrisTransactionId?: string;
   expiresAt?: string;
   qrisPayload?: string;
@@ -237,7 +239,7 @@ export type OrderStats = {
   daily: OrderStatsPoint[];
   monthly: OrderStatsPoint[];
   byType: { key: string; label: string; orders: number }[];
-  balances: { cash: number; qris: number };
+  balances: { cash: number; transfer: number; qris: number };
   qrisByAccount: { id: string; label: string; amount: number }[];
 };
 

@@ -74,7 +74,7 @@ export function parseAmount(value: unknown): number {
   return value;
 }
 
-function parseStaticPayload(raw: unknown) {
+export function parseStaticPayload(raw: unknown) {
   const payload = requiredText(raw, "Payload QRIS", MAX_PAYLOAD_LENGTH);
   const validation = validateQRIS(payload);
   if (!validation.valid) {
@@ -164,7 +164,7 @@ export async function assertSafeWebhookUrl(raw: unknown): Promise<string> {
   return url.toString();
 }
 
-function generateWebhookSecret(): string {
+export function generateWebhookSecret(): string {
   return `whsec_${randomBytes(24).toString("base64url")}`;
 }
 

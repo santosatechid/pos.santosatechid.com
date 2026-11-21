@@ -1,5 +1,9 @@
 import { auth } from "@/services/auth/auth";
 import { prisma } from "@/services/prisma";
+import {
+  generateWebhookSecret,
+  parseStaticPayload,
+} from "@/services/qris/qris";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const ALL_PERMISSIONS = [
@@ -8,6 +12,7 @@ export const ALL_PERMISSIONS = [
   "/dashboard/admin/master/users",
   "/dashboard/admin/master/roles",
   "/dashboard/admin/master/branches",
+  "/dashboard/admin/master/receipt",
   "/dashboard/admin/utility/whatsapp",
   "/dashboard/admin/utility/qris/accounts",
   "/dashboard/admin/utility/qris/transactions",
@@ -123,9 +128,30 @@ function slugify(value: string): string {
 //  Onboarding: buat client + role Admin + branch Main + userData pemilik.
 //  Satu transaksi supaya akun tidak pernah setengah jadi.
 
+export type CreateClientInput = {
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  logoUrl?: string;
+  branch?: {
+    name?: string;
+    phone?: string;
+    address?: string;
+    adminName?: string;
+  } | null;
+  qris?: { label?: string; staticPayload?: string } | null;
+};
+
+function optionalField(value: unknown, max = 200): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.trim();
+  return text ? text.slice(0, max) : null;
+}
+
 export async function createClientForUser(
   userId: string,
-  input: { name: string; email?: string; phone?: string; address?: string },
+  input: CreateClientInput,
 ) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -146,6 +172,7 @@ export async function createClientForUser(
         email: input.email || user.email,
         phone: input.phone,
         address: input.address,
+        logoUrl: optionalField(input.logoUrl, 2048),
       },
     });
 
@@ -170,9 +197,28 @@ export async function createClientForUser(
     const branch = await tx.branch.create({
       data: {
         clientId: client.id,
-        name: "Utama",
+        name: optionalField(input.branch?.name, 100) ?? "Main",
+        phone: optionalField(input.branch?.phone, 32),
+        address: optionalField(input.branch?.address, 300),
+        adminName: optionalField(input.branch?.adminName, 120),
       },
     });
+
+    if (input.qris?.staticPayload?.trim()) {
+      const parsed = parseStaticPayload(input.qris.staticPayload);
+      await tx.qrisAccount.create({
+        data: {
+          clientId: client.id,
+          label:
+            optionalField(input.qris.label, 64) ?? "QRIS Utama",
+          staticPayload: parsed.payload,
+          merchantName: parsed.merchantName,
+          merchantCity: parsed.merchantCity,
+          merchantNmid: parsed.merchantNmid,
+          webhookSecret: generateWebhookSecret(),
+        },
+      });
+    }
 
     await tx.user.update({
       where: { id: userId },

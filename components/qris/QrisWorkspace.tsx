@@ -36,7 +36,7 @@ export default function QrisWorkspace({
   const reduced = useReducedMotion() ?? false;
 
   return (
-    <div className="max-w-7xl">
+    <div className="mx-auto w-full max-w-7xl">
       <Panel reduced={reduced}>
         {initialTab === "accounts" ? <QrisAccountsTab /> : null}
         {initialTab === "transactions" ? <QrisTransactionsTab /> : null}

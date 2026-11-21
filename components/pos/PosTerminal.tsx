@@ -1,6 +1,7 @@
 "use client";
 
 import { jakarta } from "@/components/landing/font";
+import PrinterSettingsButton from "@/components/printer/PrinterSettingsButton";
 import QrImage from "@/components/qris/QrImage";
 import QrisDialogContent from "@/components/qris/QrisDialogContent";
 import { formatDateTime, formatRupiah } from "@/components/qris/qr";
@@ -15,6 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useGetClient } from "@/hooks/clients/useClients";
+import { useReceiptPrinter } from "@/hooks/printer/useReceiptPrinter";
 import {
   type OrderType,
   type PosOrderResult,
@@ -30,12 +33,16 @@ import {
   useGetQrisTransaction,
 } from "@/hooks/qris/useQris";
 import { useGetUserByIdBetterAuth } from "@/hooks/users/useUsersByIdBetterAuth";
+import { buildReceiptBytes } from "@/lib/printer/escpos";
+import { loadReceiptLogo } from "@/lib/printer/image";
 import {
   Banknote,
   Check,
   ChevronRight,
+  Landmark,
   Minus,
   Plus,
+  Printer,
   QrCode,
   RefreshCcw,
   Search,
@@ -44,11 +51,25 @@ import {
   X,
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "@/services/auth/authClients";
 import { toast } from "sonner";
 
 type CartItem = { product: ProductRecord; qty: number };
+
+type ReceiptSnapshot = {
+  orderId: string;
+  total: number;
+  paymentMethod: "qris" | "cash" | "transfer";
+  receiptNumber?: number;
+  receiptCode?: string;
+  createdAt: string;
+  orderType: OrderType;
+  customerName: string | null;
+  note: string | null;
+  table: { code: string; label: string | null } | null;
+  items: { name: string; qty: number; unitPrice: number; note: null }[];
+};
 
 const ORDER_TYPES: { value: OrderType; label: string }[] = [
   { value: "dine-in", label: "Dine-in" },
@@ -245,6 +266,14 @@ export default function PosTerminal() {
   const { data: accounts = [] } = useGetQrisAccounts();
   const createOrder = useCreatePosOrder();
   const confirmPayment = useConfirmQrisTransaction();
+  const { data: client } = useGetClient();
+  const printer = useReceiptPrinter();
+  const { autoPrint, print: printBytes } = printer;
+  const printerConnected =
+    printer.status === "connected" || printer.status === "printing";
+
+  const [lastOrder, setLastOrder] = useState<ReceiptSnapshot | null>(null);
+  const printedOrderRef = useRef<string | null>(null);
 
   const [cart, setCart] = useState<Record<string, number>>({});
   const [query, setQuery] = useState("");
@@ -261,7 +290,7 @@ export default function PosTerminal() {
     true,
   );
   const { data: stats } = useGetOrderStats(currentUser?.branch?.id ?? "all");
-  const balances = stats?.balances ?? { cash: 0, qris: 0 };
+  const balances = stats?.balances ?? { cash: 0, transfer: 0, qris: 0 };
 
   const qrisReady = accounts.some((account) => account.isActive);
   const activeTables = tables.filter((table) => table.isActive);
@@ -331,6 +360,51 @@ export default function PosTerminal() {
     setShowCart(false);
   };
 
+  const printReceipt = useCallback(
+    async (snapshot: ReceiptSnapshot) => {
+      const logo =
+        (await loadReceiptLogo(client?.logoUrl)) ??
+        (await loadReceiptLogo("/Logo.svg"));
+      const ok = await printBytes(
+        buildReceiptBytes({
+          store: {
+            name: client?.name ?? currentUser?.branch?.name ?? "Kasir",
+            address: currentUser?.branch?.address ?? client?.address ?? null,
+            phone: currentUser?.branch?.phone ?? client?.phone ?? null,
+            logo,
+          },
+          order: {
+            id: snapshot.orderId,
+            createdAt: snapshot.createdAt,
+            orderType: snapshot.orderType,
+            paymentMethod: snapshot.paymentMethod,
+            receiptNumber: snapshot.receiptNumber,
+            receiptCode: snapshot.receiptCode,
+            cashier: currentUser?.name ?? null,
+            customerName: snapshot.customerName,
+            note: snapshot.note,
+            table: snapshot.table,
+            items: snapshot.items,
+            total: snapshot.total,
+          },
+        }),
+      );
+      if (ok) toast.success("Struk dikirim ke printer.");
+      else toast.error("Gagal mencetak struk. Cek printer.");
+    },
+    [client, currentUser, printBytes],
+  );
+
+  const printReceiptIfNeeded = useCallback(
+    async (snapshot: ReceiptSnapshot | null) => {
+      if (!snapshot || printedOrderRef.current === snapshot.orderId) return;
+      printedOrderRef.current = snapshot.orderId;
+      if (!autoPrint || !printerConnected) return;
+      await printReceipt(snapshot);
+    },
+    [autoPrint, printReceipt, printerConnected],
+  );
+
   const submitOrder = () => {
     if (cartItems.length === 0) {
       toast.error("Pilih minimal satu menu.");
@@ -339,11 +413,31 @@ export default function PosTerminal() {
     setShowPaymentMethods(true);
   };
 
-  const payWith = async (method: "qris" | "cash") => {
+  const payWith = async (method: "qris" | "cash" | "transfer") => {
     if (method === "qris" && !qrisReady) {
       toast.error("QRIS belum aktif.");
       return;
     }
+
+    const selectedTable =
+      orderType === "dine-in"
+        ? activeTables.find((table) => table.id === tableId)
+        : undefined;
+    const receiptBase = {
+      createdAt: new Date().toISOString(),
+      orderType,
+      customerName: customerName.trim() || null,
+      note: note.trim() || null,
+      table: selectedTable
+        ? { code: selectedTable.code, label: selectedTable.label }
+        : null,
+      items: cartItems.map(({ product, qty }) => ({
+        name: product.name,
+        qty,
+        unitPrice: product.price,
+        note: null as null,
+      })),
+    };
 
     try {
       const result = await createOrder.mutateAsync({
@@ -361,8 +455,25 @@ export default function PosTerminal() {
       setShowPaymentMethods(false);
       resetOrder();
 
+      const snapshot: ReceiptSnapshot = {
+        ...receiptBase,
+        orderId: result.orderId,
+        total: result.total,
+        paymentMethod: result.paymentMethod,
+        receiptNumber: result.receiptNumber,
+        receiptCode: result.receiptCode,
+      };
+      setLastOrder(snapshot);
+
       if (result.paymentMethod === "cash") {
         toast.success("Pembayaran cash masuk saldo cash.");
+        await printReceiptIfNeeded(snapshot);
+        return;
+      }
+
+      if (result.paymentMethod === "transfer") {
+        toast.success("Pembayaran transfer dicatat.");
+        await printReceiptIfNeeded(snapshot);
         return;
       }
 
@@ -382,6 +493,12 @@ export default function PosTerminal() {
         ? "Kedaluwarsa"
         : "Menunggu pembayaran";
 
+  useEffect(() => {
+    if (paymentStatus !== "paid" || !payment || !lastOrder) return;
+    if (payment.orderId !== lastOrder.orderId) return;
+    void printReceiptIfNeeded(lastOrder);
+  }, [paymentStatus, payment, lastOrder, printReceiptIfNeeded]);
+
   const checkPayment = async () => {
     const result = await qrisStatus.refetch();
     const status = result.data?.status;
@@ -399,6 +516,7 @@ export default function PosTerminal() {
     try {
       await confirmPayment.mutateAsync(payment.qrisTransactionId);
       toast.success("Pembayaran lunas, masuk saldo QRIS.");
+      await printReceiptIfNeeded(lastOrder);
       setPayment(null);
     } catch (error) {
       toast.error(
@@ -456,18 +574,27 @@ export default function PosTerminal() {
             />
             {qrisReady ? "QRIS SIAP" : "QRIS BELUM SIAP"}
           </span>
+          <PrinterSettingsButton />
         </div>
       </header>
 
       <main className="mx-auto grid w-full max-w-[1440px] gap-5 px-4 py-4 lg:grid-cols-[1fr_360px] lg:px-6 lg:py-6">
         <section>
-          <div className="mb-3 grid grid-cols-2 gap-2">
+          <div className="mb-3 grid grid-cols-3 gap-2">
             <div className="rounded-[12px] bg-white p-3 outline outline-1 -outline-offset-[0.5px] outline-[#E3E5E9]">
               <p className="text-[9px] font-extrabold tracking-[0.5px] text-[#5D6370]">
                 SALDO CASH
               </p>
               <p className="mt-0.5 text-[16px] font-extrabold tracking-[-0.4px] text-[#16181D]">
                 {formatRupiah(balances.cash)}
+              </p>
+            </div>
+            <div className="rounded-[12px] bg-white p-3 outline outline-1 -outline-offset-[0.5px] outline-[#E3E5E9]">
+              <p className="text-[9px] font-extrabold tracking-[0.5px] text-[#5D6370]">
+                SALDO TF
+              </p>
+              <p className="mt-0.5 text-[16px] font-extrabold tracking-[-0.4px] text-[#16181D]">
+                {formatRupiah(balances.transfer)}
               </p>
             </div>
             <div className="rounded-[12px] bg-white p-3 outline outline-1 -outline-offset-[0.5px] outline-[#E3E5E9]">
@@ -669,6 +796,26 @@ export default function PosTerminal() {
             <button
               type="button"
               disabled={createOrder.isPending}
+              onClick={() => void payWith("transfer")}
+              className="flex w-full items-center gap-3 rounded-[14px] border border-[#E3E5E9] bg-white p-3 text-left transition-colors hover:border-[#C81E28] hover:bg-[#FDECEC] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="grid h-11 w-11 place-items-center rounded-[10px] bg-[#EEF3FD] text-[#1D4ED8]">
+                <Landmark className="h-5 w-5" />
+              </span>
+              <span className="flex-1">
+                <span className="block text-[13px] font-extrabold text-[#16181D]">
+                  Transfer
+                </span>
+                <span className="block text-[11px] font-medium text-[#5D6370]">
+                  Transfer bank, lunas setelah dana masuk.
+                </span>
+              </span>
+              <ChevronRight className="h-4 w-4 text-[#7C8290]" />
+            </button>
+
+            <button
+              type="button"
+              disabled={createOrder.isPending}
               onClick={() => void payWith("cash")}
               className="flex w-full items-center gap-3 rounded-[14px] border border-[#E3E5E9] bg-white p-3 text-left transition-colors hover:border-[#C81E28] hover:bg-[#FDECEC] disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -755,6 +902,18 @@ export default function PosTerminal() {
                 {paymentStatusLabel}
               </span>
             </div>
+
+            {paymentStatus === "paid" && lastOrder ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void printReceipt(lastOrder)}
+                className="h-11 w-full rounded-[10px] text-[13px] font-bold"
+              >
+                <Printer className="mr-2 h-4 w-4" />
+                Cetak struk
+              </Button>
+            ) : null}
 
             <Button
               type="button"

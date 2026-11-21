@@ -103,6 +103,7 @@ const availablePermissions = [
   { id: "/dashboard/admin/master/users", label: "Users Management" },
   { id: "/dashboard/admin/master/roles", label: "Roles Management" },
   { id: "/dashboard/admin/master/branches", label: "Branch Management" },
+  { id: "/dashboard/admin/master/receipt", label: "Struk & Profil" },
   {
     id: "/dashboard/admin/master/betterAuth",
     label: "BetterAuth Management",
@@ -562,7 +563,7 @@ function RoleDataTable({ clientId }: { clientId?: string }) {
 
   return (
     <>
-      <div className="">
+      <div className="mx-auto w-full max-w-7xl">
         <div className="text-3xl font-semibold tracking-tight">Roles Menu</div>
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center space-x-2">

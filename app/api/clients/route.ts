@@ -4,6 +4,7 @@ import { auth } from "@/services/auth/auth";
 import { createClientForUser } from "@/services/clients";
 import { handlePrismaError } from "@/services/errorHandler";
 import { prisma } from "@/services/prisma";
+import { QrisError } from "@/services/qris/qris";
 
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -41,7 +42,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { name, email, phone, address } = await request.json();
+    const { name, email, phone, address, logoUrl, branch, qris } =
+      await request.json();
 
     if (!name || typeof name !== "string" || name.trim().length < 2) {
       return NextResponse.json(
@@ -55,16 +57,79 @@ export async function POST(request: NextRequest) {
       email,
       phone,
       address,
+      logoUrl,
+      branch,
+      qris,
     });
 
     return NextResponse.json(client, { status: 201 });
   } catch (error) {
+    if (error instanceof QrisError) {
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: error.status },
+      );
+    }
     if (error instanceof Error && error.message.includes("sudah memiliki")) {
       return NextResponse.json(
         { success: false, message: error.message },
         { status: 409 },
       );
     }
+    return handlePrismaError(error);
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, message: "Sesi tidak ditemukan" },
+        { status: 401 },
+      );
+    }
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { clientId: true },
+    });
+    if (!user?.clientId) {
+      return NextResponse.json(
+        { success: false, message: "Client tidak ditemukan" },
+        { status: 404 },
+      );
+    }
+
+    const body = await request.json();
+    const name = typeof body.name === "string" ? body.name.trim() : undefined;
+    if (name !== undefined && name.length < 2) {
+      return NextResponse.json(
+        { success: false, message: "Nama client minimal 2 karakter" },
+        { status: 400 },
+      );
+    }
+
+    const client = await prisma.client.update({
+      where: { id: user.clientId },
+      data: {
+        ...(name !== undefined ? { name } : {}),
+        ...(typeof body.email === "string"
+          ? { email: body.email.trim() || null }
+          : {}),
+        ...(typeof body.phone === "string"
+          ? { phone: body.phone.trim() || null }
+          : {}),
+        ...(typeof body.address === "string"
+          ? { address: body.address.trim() || null }
+          : {}),
+        ...(typeof body.logoUrl === "string"
+          ? { logoUrl: body.logoUrl.trim() || null }
+          : {}),
+      },
+    });
+
+    return NextResponse.json(client);
+  } catch (error) {
     return handlePrismaError(error);
   }
 }

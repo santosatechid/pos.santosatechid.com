@@ -76,6 +76,7 @@ export const useUpdateBranch = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["branchs"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 };

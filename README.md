@@ -27,11 +27,15 @@ Starter SaaS multi-tenant: autentikasi, onboarding client, role & branch, manaje
 - Master data: CRUD users, roles, branches. Membuat user langsung mendaftarkan akun login email/password (Better Auth) dan mengaitkan branch.
 - Role default per client: Admin dan Kasir. Kasir hanya melihat Dashboard, Profile, dan QRIS & Meja.
 - Coba Gratis → Google OAuth → OTP 6 digit via Resend → onboarding/dashboard.
+- Onboarding: buat client, role Admin/Kasir, cabang `Main`, profil struk (logo/alamat/telepon), dan QRIS statis opsional dalam satu transaksi.
 - Google user wajib verifikasi OTP sekali; email/password buatan admin tidak dipaksa OTP.
 - Profil pengguna.
 - WhatsApp: kirim tunggal, kirim massal lewat queue, retry 1s → 5s → 30s, dan DLQ.
 - QRIS: upload QRIS statis (gambar/payload), generate QRIS dinamis, konfirmasi manual, webhook outbound bertanda tangan HMAC-SHA256.
-- Dashboard POS: tipe pesanan (dine-in/bawa pulang/diantar), pilih meja, keranjang, dan pembayaran QRIS. Kasir bisa membuat pesanan langsung dari dashboard.
+- Dashboard POS: tipe pesanan (dine-in/bawa pulang/diantar), pilih meja, keranjang, dan pembayaran QRIS, cash, atau transfer. Kasir bisa membuat pesanan langsung dari dashboard.
+- Cabang: tambah cabang sekaligus mendaftarkan akun kasir otomatis (email + password, password bisa diisi atau dibuat sistem).
+- Struk & Profil (`/dashboard/admin/master/receipt`): atur logo, alamat, dan telepon toko; profil cabang (alamat, telepon, penanggung jawab) menimpa profil toko di struk.
+- Struk: printer Bluetooth 58mm (BLE + ESC/POS) lewat Web Bluetooth. Logo, alamat, dan telepon ikut tercetak; cetak otomatis setelah lunas, plus tes cetak di header kasir.
 - Laporan pesanan: grafik omzet 14 hari, tren 6 bulan, dan komposisi tipe pesanan di halaman Pesanan.
 - Dock bawah di `/dashboard`: Kasir, Pesanan, Produk, Meja, QRIS, Cabang, Profil.
 - Meja: QR permanen per meja → halaman pesan publik → pesanan → pembayaran QRIS dinamis.

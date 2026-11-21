@@ -6,6 +6,7 @@ import { type Metadata, type Viewport } from "next";
 import localFont from "next/font/local";
 
 import { ReactQueryProvider } from "@/app/providers";
+import { ReceiptPrinterProvider } from "@/hooks/printer/useReceiptPrinter";
 import { type ReactNode } from "react";
 
 const inter = localFont({
@@ -46,7 +47,9 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <Toaster />
         <ReactQueryProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <ReceiptPrinterProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </ReceiptPrinterProvider>
         </ReactQueryProvider>
       </body>
     </html>

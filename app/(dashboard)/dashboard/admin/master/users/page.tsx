@@ -77,7 +77,7 @@ export default function UsersPage() {
   if (isLoading) return <Loading />;
 
   return (
-    <div className="max-w-8xl space-y-4">
+    <div className="mx-auto w-full max-w-7xl space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-[22px] font-extrabold tracking-[-0.6px] text-[#16181D]">

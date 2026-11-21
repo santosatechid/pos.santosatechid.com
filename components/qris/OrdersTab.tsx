@@ -80,11 +80,13 @@ const TYPE_CONFIG = {
 
 const BALANCE_CONFIG = {
   cash: { label: "Cash", color: "#15803D" },
+  transfer: { label: "Transfer", color: "#1D4ED8" },
   qris: { label: "QRIS", color: "#C81E28" },
 } satisfies ChartConfig;
 
 const BALANCE_COLORS: Record<string, string> = {
   cash: "#15803D",
+  transfer: "#1D4ED8",
   qris: "#C81E28",
 };
 
@@ -299,7 +301,7 @@ export default function OrdersTab() {
         <Card className="rounded-[16px] border-[#E3E5E9] bg-white shadow-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-[13px] font-extrabold text-[#16181D]">
-              Saldo Cash &amp; QRIS
+              Saldo Cash, Transfer &amp; QRIS
             </CardTitle>
             <CardDescription className="text-[11.5px] text-[#5D6370]">
               Total pembayaran lunas per metode.
@@ -320,6 +322,11 @@ export default function OrdersTab() {
                       amount: stats?.balances.cash ?? 0,
                     },
                     {
+                      key: "transfer",
+                      label: "Transfer",
+                      amount: stats?.balances.transfer ?? 0,
+                    },
+                    {
                       key: "qris",
                       label: "QRIS",
                       amount: stats?.balances.qris ?? 0,
@@ -333,6 +340,7 @@ export default function OrdersTab() {
                   strokeWidth={0}
                 >
                   <Cell fill={BALANCE_COLORS.cash} />
+                  <Cell fill={BALANCE_COLORS.transfer} />
                   <Cell fill={BALANCE_COLORS.qris} />
                 </Pie>
               </PieChart>
@@ -343,6 +351,13 @@ export default function OrdersTab() {
                 <span className="min-w-16">Cash</span>
                 <span className="text-[#5D6370]">
                   {formatRupiah(stats?.balances.cash ?? 0)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-[12px] font-semibold text-[#16181D]">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#1D4ED8]" />
+                <span className="min-w-16">Transfer</span>
+                <span className="text-[#5D6370]">
+                  {formatRupiah(stats?.balances.transfer ?? 0)}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[12px] font-semibold text-[#16181D]">
@@ -486,6 +501,8 @@ export default function OrdersTab() {
                   <TableCell>
                     {order.paymentMethod === "cash" ? (
                       <Badge>Cash</Badge>
+                    ) : order.paymentMethod === "transfer" ? (
+                      <Badge>Transfer</Badge>
                     ) : order.qrisTransaction ? (
                       <Badge
                         variant={statusVariant(order.qrisTransaction.status)}

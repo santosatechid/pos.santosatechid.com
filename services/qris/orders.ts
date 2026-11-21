@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import { convertQRIS, validateQRIS } from "@/lib/qris";
 import { prisma } from "@/services/prisma";
 
@@ -13,6 +15,36 @@ const MAX_TOTAL = 1_000_000_000_000;
 const DEFAULT_EXPIRY_MINUTES = 15;
 const MAX_ORDER_ITEMS = 50;
 const MAX_QTY = 99;
+const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+function jakartaDayRange(reference: Date) {
+  const local = new Date(reference.getTime() + WIB_OFFSET_MS);
+  const start =
+    Date.UTC(
+      local.getUTCFullYear(),
+      local.getUTCMonth(),
+      local.getUTCDate(),
+    ) - WIB_OFFSET_MS;
+  return { start: new Date(start), end: new Date(start + 86_400_000) };
+}
+
+function jakartaDayKey(reference: Date) {
+  const local = new Date(reference.getTime() + WIB_OFFSET_MS);
+  const month = String(local.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(local.getUTCDate()).padStart(2, "0");
+  return `${local.getUTCFullYear()}${month}${day}`;
+}
+
+// ponytail: hitungan harian pakai count, bukan sequence DB. Aman untuk satu
+// kasir; dua transaksi persis bersamaan bisa dapat nomor sama.
+function receiptIdentity(reference: Date, sequence: number) {
+  const receiptCode = createHash("sha256")
+    .update(`${jakartaDayKey(reference)}-${sequence}`)
+    .digest("hex")
+    .slice(0, 6)
+    .toUpperCase();
+  return { receiptNumber: sequence, receiptCode };
+}
 
 function parsePrice(value: unknown): number {
   if (typeof value !== "number" || !Number.isSafeInteger(value)) {
@@ -239,7 +271,7 @@ export type OrderStats = {
   daily: OrderStatsPoint[];
   monthly: OrderStatsPoint[];
   byType: { key: string; label: string; orders: number }[];
-  balances: { cash: number; qris: number };
+  balances: { cash: number; transfer: number; qris: number };
   qrisByAccount: { id: string; label: string; amount: number }[];
 };
 
@@ -365,12 +397,14 @@ export async function getOrderStats(
     (result, row) => {
       if (row.paymentMethod === "cash") {
         result.cash = row._sum.total ?? 0;
+      } else if (row.paymentMethod === "transfer") {
+        result.transfer = row._sum.total ?? 0;
       } else {
         result.qris += row._sum.total ?? 0;
       }
       return result;
     },
-    { cash: 0, qris: 0 },
+    { cash: 0, transfer: 0, qris: 0 },
   );
 
   const qrisRows = await prisma.qrisTransaction.groupBy({
@@ -412,6 +446,7 @@ export async function getOrderStats(
   };
 }
 
+    transfer: "Transfer",
 export async function listOrders(
   clientId: string,
   status?: string | null,
@@ -548,10 +583,10 @@ function parseOrderItems(raw: unknown): PublicOrderItemInput[] {
 }
 
 export type PosOrderType = "dine-in" | "takeaway" | "delivery";
-export type PaymentMethod = "qris" | "cash";
+export type PaymentMethod = "qris" | "cash" | "transfer";
 
 const ORDER_TYPES: PosOrderType[] = ["dine-in", "takeaway", "delivery"];
-const PAYMENT_METHODS: PaymentMethod[] = ["qris", "cash"];
+const PAYMENT_METHODS: PaymentMethod[] = ["qris", "cash", "transfer"];
 
 function parsePaymentMethod(value: unknown): PaymentMethod {
   if (value === undefined || value === null || value === "") return "qris";
@@ -627,36 +662,52 @@ async function resolveActiveAccount(clientId: string, preferredId?: string | nul
   return account;
 }
 
-async function persistCashOrder(params: {
+async function persistPaidOrder(params: {
   clientId: string;
   tableId: string | null;
   branchId: string | null;
   orderType: PosOrderType;
+  paymentMethod: "cash" | "transfer";
   customerName: string | null;
   note: string | null;
   items: { productId: string; productName: string; unitPrice: number; qty: number; note: string | null }[];
   total: number;
 }) {
-  const order = await prisma.order.create({
-    data: {
-      clientId: params.clientId,
-      tableId: params.tableId,
-      branchId: params.branchId,
-      orderType: params.orderType,
-      paymentMethod: "cash",
-      status: "paid",
-      customerName: params.customerName,
-      note: params.note,
-      total: params.total,
-      items: { create: params.items },
-    },
-  });
+  const now = new Date();
 
-  return {
-    orderId: order.id,
-    total: params.total,
-    paymentMethod: "cash" as const,
-  };
+  return prisma.$transaction(async (tx) => {
+    const { start, end } = jakartaDayRange(now);
+    const dailyCount = await tx.order.count({
+      where: {
+        clientId: params.clientId,
+        ...(params.branchId ? { branchId: params.branchId } : {}),
+        createdAt: { gte: start, lt: end },
+      },
+    });
+    const identity = receiptIdentity(now, dailyCount + 1);
+
+    const order = await tx.order.create({
+      data: {
+        clientId: params.clientId,
+        tableId: params.tableId,
+        branchId: params.branchId,
+        orderType: params.orderType,
+        paymentMethod: params.paymentMethod,
+        status: "paid",
+        customerName: params.customerName,
+        note: params.note,
+        total: params.total,
+        items: { create: params.items },
+      },
+    });
+
+    return {
+      orderId: order.id,
+      total: params.total,
+      paymentMethod: params.paymentMethod,
+      ...identity,
+    };
+  });
 }
 
 async function persistOrderWithPayment(params: {
@@ -682,8 +733,19 @@ async function persistOrderWithPayment(params: {
   }
 
   const expiresAt = new Date(Date.now() + DEFAULT_EXPIRY_MINUTES * 60_000);
+  const now = new Date();
 
   return prisma.$transaction(async (tx) => {
+    const { start, end } = jakartaDayRange(now);
+    const dailyCount = await tx.order.count({
+      where: {
+        clientId: params.clientId,
+        ...(params.branchId ? { branchId: params.branchId } : {}),
+        createdAt: { gte: start, lt: end },
+      },
+    });
+    const identity = receiptIdentity(now, dailyCount + 1);
+
     const order = await tx.order.create({
       data: {
         clientId: params.clientId,
@@ -721,6 +783,7 @@ async function persistOrderWithPayment(params: {
       expiresAt,
       qrisPayload: dynamicPayload,
       qrisTransactionId: qrisTransaction.id,
+      ...identity,
     };
   });
 }
@@ -809,12 +872,13 @@ export async function createCounterOrder(
   const customerName = optionalText(input.customerName, "Nama", 80);
   const note = optionalText(input.note, "Catatan", 500);
 
-  if (paymentMethod === "cash") {
-    return persistCashOrder({
+  if (paymentMethod === "cash" || paymentMethod === "transfer") {
+    return persistPaidOrder({
       clientId,
       tableId,
       branchId,
       orderType,
+      paymentMethod,
       customerName,
       note,
       items: resolved.items,

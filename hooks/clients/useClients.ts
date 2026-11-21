@@ -1,7 +1,7 @@
 "use client";
 
 import { CACHE_STRATEGIES } from "@/app/providers";
-import { apiGet, apiPost } from "@/lib/http/apiClient";
+import { apiGet, apiPost, apiPut } from "@/lib/http/apiClient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export type ClientRecord = {
@@ -23,6 +23,14 @@ export type ClientInput = {
   email?: string;
   phone?: string;
   address?: string;
+  logoUrl?: string;
+  branch?: {
+    name?: string;
+    phone?: string;
+    address?: string;
+    adminName?: string;
+  };
+  qris?: { label?: string; staticPayload?: string };
 };
 
 export const useGetClient = () => {
@@ -41,6 +49,27 @@ export const useCreateClient = () => {
   return useMutation({
     mutationFn: async (data: ClientInput) => {
       const res = await apiPost<ClientRecord>("/api/clients", data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["client"] });
+    },
+  });
+};
+
+export type ClientUpdateInput = {
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  logoUrl?: string;
+};
+
+export const useUpdateClient = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: ClientUpdateInput) => {
+      const res = await apiPut<ClientRecord>("/api/clients", data);
       return res.data;
     },
     onSuccess: () => {

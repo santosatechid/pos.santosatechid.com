@@ -97,9 +97,12 @@ const branchSchema = z.object({
     .max(100, "Nama maksimal 100 karakter"),
   description: z.string().optional(),
   address: z.string().optional(),
+  phone: z.string().optional(),
+  adminName: z.string().optional(),
   isActive: z.boolean(),
   cashierName: z.string().optional(),
   cashierEmail: z.string().optional(),
+  cashierPassword: z.string().optional(),
 });
 
 type BranchFormValues = z.infer<typeof branchSchema>;
@@ -150,14 +153,19 @@ function BranchFormDialog({
       setValue("name", editData.name);
       setValue("description", editData.description || "");
       setValue("address", editData.address || "");
+      setValue("phone", editData.phone || "");
+      setValue("adminName", editData.adminName || "");
       setValue("isActive", editData.isActive);
     } else {
       reset({
         name: "",
         description: "",
         address: "",
+        phone: "",
+        adminName: "",
         cashierName: "",
         cashierEmail: "",
+        cashierPassword: "",
         isActive: true,
       });
     }
@@ -171,6 +179,8 @@ function BranchFormDialog({
           name: data.name,
           description: data.description,
           address: data.address,
+          phone: data.phone,
+          adminName: data.adminName,
           isActive: data.isActive,
         });
         toast.success("Cabang berhasil diperbarui!");
@@ -183,12 +193,27 @@ function BranchFormDialog({
           return;
         }
 
+        if (
+          data.cashierPassword &&
+          data.cashierPassword.length > 0 &&
+          data.cashierPassword.length < 8
+        ) {
+          toast.error("Password minimal 8 karakter.");
+          return;
+        }
+
         const created = await createBranch.mutateAsync({
           name: data.name,
           description: data.description,
           address: data.address,
+          phone: data.phone,
+          adminName: data.adminName,
           isActive: data.isActive,
-          cashier: { name: cashierName, email: cashierEmail },
+          cashier: {
+            name: cashierName,
+            email: cashierEmail,
+            password: data.cashierPassword?.trim() || undefined,
+          },
         });
 
         if (created.cashier) {
@@ -261,6 +286,25 @@ function BranchFormDialog({
               />
             </div>
 
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telepon cabang</Label>
+                <Input
+                  id="phone"
+                  placeholder="0812-xxxx-xxxx"
+                  {...register("phone")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="adminName">Penanggung jawab</Label>
+                <Input
+                  id="adminName"
+                  placeholder="Nama admin cabang"
+                  {...register("adminName")}
+                />
+              </div>
+            </div>
+
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <p className="text-sm font-medium">Cabang aktif</p>
@@ -279,10 +323,10 @@ function BranchFormDialog({
                 <Separator />
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm font-semibold">Akun kasir</p>
+                    <p className="text-sm font-semibold">Akun login cabang</p>
                     <p className="text-muted-foreground text-xs">
-                      Akun langsung terdaftar. Password dibuat otomatis dan
-                      ditampilkan setelah cabang disimpan.
+                      Akun kasir otomatis terdaftar saat cabang disimpan.
+                      Password dibuat otomatis bila dikosongkan.
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -301,6 +345,21 @@ function BranchFormDialog({
                       autoComplete="off"
                       placeholder="kasir@email.com"
                       {...register("cashierEmail")}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cashierPassword">
+                      Password{" "}
+                      <span className="text-muted-foreground text-xs">
+                        (opsional, min. 8 karakter)
+                      </span>
+                    </Label>
+                    <Input
+                      id="cashierPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="Kosongkan untuk dibuat otomatis"
+                      {...register("cashierPassword")}
                     />
                   </div>
                 </div>
@@ -833,7 +892,7 @@ function BranchDataTable() {
   if (isLoading) return <Loading />;
 
   return (
-    <div className="space-y-4">
+    <div className="mx-auto w-full max-w-7xl space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-[22px] font-extrabold tracking-[-0.6px] text-[#16181D]">
